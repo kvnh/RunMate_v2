@@ -3,6 +3,7 @@ package com.khackett.runmate;
 import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -26,6 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RouteRecipientsActivity extends ListActivity {
+
+    // Declaring the Toolbar Object
+    private Toolbar toolbar;
 
     public static final String TAG = RouteRecipientsActivity.class.getSimpleName();
 
@@ -52,9 +56,10 @@ public class RouteRecipientsActivity extends ListActivity {
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.activity_route_recipients);
 
+
         // line to ensure the action bar displays in the layout
         // ((AppCompatActivity) getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        // getActionBar().setDisplayHomeAsUpEnabled(true);
 
         // the list view keeps track of items that are selected (this is the check property on each item)
         // loop through the list to see who is checked - do this when we are ready to send

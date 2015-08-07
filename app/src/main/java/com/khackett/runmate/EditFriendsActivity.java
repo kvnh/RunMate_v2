@@ -40,7 +40,7 @@ public class EditFriendsActivity extends ListActivity {
         setContentView(R.layout.activity_edit_friends);
 
         // line to ensure the action bar displays in the layout
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        // getActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Show the Up button in the action bar.
         // setupActionBar();
