@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
 
                             }
                             break;
+
                         case 1: // Take video
                             Intent videoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
                             mMediaUri = getOutputMediaFileUri(MEDIA_TYPE_VIDEO);
@@ -97,14 +98,13 @@ public class MainActivity extends AppCompatActivity implements ActionBar.TabList
                             choosePhotoIntent.setType("image/*");
                             startActivityForResult(choosePhotoIntent, PICK_PHOTO_REQUEST);
                             break;
+
                         case 3: // Choose video
                             Intent chooseVideoIntent = new Intent(Intent.ACTION_GET_CONTENT);
                             // need to specify which type of action we want to get - an image in this case
                             chooseVideoIntent.setType("video/*");
-
                             // impose limits so that the user doesn't select a large video file from the library
                             Toast.makeText(MainActivity.this, R.string.video_file_size_warning, Toast.LENGTH_LONG).show();
-
                             startActivityForResult(chooseVideoIntent, PICK_VIDEO_REQUEST);
                             break;
                     }

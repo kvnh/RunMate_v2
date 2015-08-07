@@ -14,7 +14,7 @@ public final class ParseConstants {
     public static final String CLASS_ROUTES = "Routes";
 
     /**
-     * Field names - convention is to prefix KEY to the constant name - and for fields to begin with lowercase
+     * Field names - Prefix KEY to the constant name.  Fields to begin with lowercase.
      */
     public static final String KEY_USERNAME = "username";
     public static final String KEY_FRIENDS_RELATION = "friendsRelation";
@@ -25,10 +25,8 @@ public final class ParseConstants {
     public static final String KEY_FILE = "file";
     public static final String KEY_FILE_TYPE = "fileType";
     public static final String KEY_CREATED_AT = "createdAt";
-
     public static final String TYPE_IMAGE = "image";
     public static final String TYPE_VIDEO = "video";
-
     public static final String KEY_LATLNGPOINTS = "latLngPoints";
 
 }
