@@ -19,17 +19,10 @@ import java.util.ArrayList;
 
 public class MapsActivityManualPolyline extends FragmentActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
 
-    // set the latitude and longitude of the points you are going to create
-    // private static final LatLng LOWER_MANHATTAN = new LatLng(40.722543, -73.998585);
-    // private static final LatLng TIMES_SQUARE = new LatLng(40.7577, -73.9857);
-    // private static final LatLng BROOKLYN_BRIDGE = new LatLng(40.7057, -73.9964);
-
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
     double mLatitude = 0;
     double mLongitude = 0;
-
-    // mMap.getUiSettings().setZoomControlsEnabled(true);
 
     // create an array list to contain all of the points tapped on the map.
     // These points will contain latitude and longitude points
@@ -46,6 +39,9 @@ public class MapsActivityManualPolyline extends FragmentActivity implements Goog
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_activity_manual_polyline);
+
+        // mMap.getUiSettings().setZoomControlsEnabled(true);
+
         setUpMapIfNeeded();
 
         // instantiate arrayPoints object
@@ -122,19 +118,6 @@ public class MapsActivityManualPolyline extends FragmentActivity implements Goog
         }
     }
 
-//    /**
-//     * method to zoom in or out using the buttons on the screen
-//     *
-//     * @param view
-//     */
-//    public void onZoom(View view) {
-//        if (view.getId() == R.id.Bzoomin) {
-//            mMap.animateCamera(CameraUpdateFactory.zoomIn());
-//        }
-//        if (view.getId() == R.id.Bzoomout) {
-//            mMap.animateCamera(CameraUpdateFactory.zoomOut());
-//        }
-//    }
 
     /**
      * checks if a map fragment has already been created
@@ -152,7 +135,6 @@ public class MapsActivityManualPolyline extends FragmentActivity implements Goog
             }
         }
     }
-
 
     private void setUpMap() {
 

@@ -131,6 +131,19 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
                 }
             });
+
+
+            // The map will be cleared on long click
+            mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+                @Override
+                public void onMapLongClick(LatLng point) {
+                    // Removes all the points from Google Map
+                    mMap.clear();
+                    // Removes all the points in the ArrayList
+                    markerPoints.clear();
+                }
+            });
+
         }
 
 
