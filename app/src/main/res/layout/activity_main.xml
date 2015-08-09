@@ -9,8 +9,7 @@
         android:id="@+id/tool_bar"
         layout="@layout/tool_bar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        />
+        android:layout_height="wrap_content"/>
 
     <com.khackett.runmate.SlidingTabLayout
         android:id="@+id/tabs"

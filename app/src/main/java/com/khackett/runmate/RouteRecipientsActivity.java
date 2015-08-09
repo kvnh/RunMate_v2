@@ -54,8 +54,13 @@ public class RouteRecipientsActivity extends ListActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         setContentView(R.layout.activity_route_recipients);
 
+//        // Attaching the toolbar layout to the toolbar object
+//        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+//        // Setting toolbar as the ActionBar with setSupportActionBar() call
+//        setSupportActionBar(toolbar);
 
         // line to ensure the action bar displays in the layout
         // ((AppCompatActivity) getSupportActionBar()).setDisplayHomeAsUpEnabled(true);

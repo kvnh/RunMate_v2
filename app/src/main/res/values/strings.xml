@@ -28,6 +28,7 @@
 
     <string name="menu_logout_label">Logout</string>
     <string name="menu_edit_friends_label">Edit Friends</string>
+    <string name="menu_add_friend_label">Add Friends</string>
 
     <string name="progress_bar">Progress Bar</string>
 
