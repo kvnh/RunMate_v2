@@ -40,8 +40,6 @@ public class MapsActivityManualPolyline extends FragmentActivity implements Goog
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_activity_manual_polyline);
 
-        // mMap.getUiSettings().setZoomControlsEnabled(true);
-
         setUpMapIfNeeded();
 
         // instantiate arrayPoints object
@@ -58,6 +56,8 @@ public class MapsActivityManualPolyline extends FragmentActivity implements Goog
 
         // centres the camera on the users current location when the map loads
         centreCamera();
+
+        mMap.getUiSettings().setZoomControlsEnabled(true);
 
         // setting click event handlers for the map
         mMap.setOnMapClickListener(this);
@@ -118,7 +118,6 @@ public class MapsActivityManualPolyline extends FragmentActivity implements Goog
         }
     }
 
-
     /**
      * checks if a map fragment has already been created
      * if not, then it creates one and calls the setUpMap() method
@@ -137,23 +136,9 @@ public class MapsActivityManualPolyline extends FragmentActivity implements Goog
     }
 
     private void setUpMap() {
-
-        // sets a marker at the latlng position of (0,0) - can delete this line
-        // mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-
         // set the app to locate the users current location
         mMap.setMyLocationEnabled(true);
     }
-
-//    private void addLines() {
-//        mMap.addPolyline((new PolylineOptions())
-//                .add(TIMES_SQUARE, BROOKLYN_BRIDGE, LOWER_MANHATTAN, TIMES_SQUARE)
-//                .width(5)
-//                .color(Color.BLUE)
-//                .geodesic(true));
-//        // move camera to zoom on map, passing in area you want to zoom and zoom length
-//        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(LOWER_MANHATTAN, 13));
-//    }
 
     /**
      * Called when the user makes a tap gesture on the map, but only if none of the overlays of the map handled the gesture.

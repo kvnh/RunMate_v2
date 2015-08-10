@@ -1,4 +1,4 @@
-package com.khackett.runmate;
+package com.khackett.runmate.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;

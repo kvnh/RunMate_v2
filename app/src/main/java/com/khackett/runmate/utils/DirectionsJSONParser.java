@@ -1,4 +1,4 @@
-package com.khackett.runmate;
+package com.khackett.runmate.utils;
 
 import com.google.android.gms.maps.model.LatLng;
 

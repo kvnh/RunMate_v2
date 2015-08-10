@@ -1,4 +1,4 @@
-package com.khackett.runmate;
+package com.khackett.runmate.utils;
 
 /**
  * Created by KHackett on 24/07/15.

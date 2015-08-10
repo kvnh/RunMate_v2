@@ -8,16 +8,21 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBar;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import com.khackett.runmate.adapters.SectionsPagerAdapter;
+import com.khackett.runmate.utils.ParseConstants;
 import com.parse.ParseUser;
 
 import java.io.File;
@@ -30,8 +35,33 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
+
+    //First We Declare Titles And Icons For Our Navigation Drawer List View
+    //This Icons And Titles Are holded in an Array as you can see
+    String TITLES[] = {"My Profile", "Upcoming Runs", "Settings"};
+    int ICONS[] = {R.mipmap.ic_action_add_friend, R.mipmap.ic_directions_run_white_24dp, R.drawable.ic_setting_light};
+
+    //Similarly we Create a String Resource for the name and email in the header view
+    //And we also create a int resource for profile picture in the header view
+    String NAME = "Kevin Hackett";
+    String EMAIL = "kevin@kevin.com";
+    int PROFILE = R.drawable.ic_media_play;
+
+
     // Declaring the Toolbar Object
     private Toolbar toolbar;
+
+    // Declaring RecyclerView
+    RecyclerView mRecyclerView;
+    // Declaring Adapter For Recycler View
+    RecyclerView.Adapter mAdapter;
+    // Declaring Layout Manager as a linear layout manager
+    RecyclerView.LayoutManager mLayoutManager;
+    // Declaring DrawerLayout
+    DrawerLayout Drawer;
+
+    ActionBarDrawerToggle mDrawerToggle;
+
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -233,9 +263,51 @@ public class MainActivity extends AppCompatActivity {
         // Setting toolbar as the ActionBar with setSupportActionBar() call
         setSupportActionBar(toolbar);
 
-        // to track statistics around application opens, use the following line...
-        // ParseAnalytics.trackAppOpened(getIntent());
-        // the analytics from parse are used to capture usage data about how users are actually using an app
+        // Assigning the RecyclerView Object to the xml View
+        mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
+
+        // Letting the system know that the list objects are of fixed size
+        mRecyclerView.setHasFixedSize(true);
+
+        // Creating the Adapter of AdapterNavigation class(which we are going to see in a bit)
+        mAdapter = new AdapterNavigation(TITLES, ICONS, NAME, EMAIL, PROFILE);
+        // And passing the titles,icons,header view name, header view email,
+        // and header view profile picture
+
+        // Setting the adapter to RecyclerView
+        mRecyclerView.setAdapter(mAdapter);
+
+        // Creating a layout Manager
+        mLayoutManager = new LinearLayoutManager(this);
+
+        // Setting the layout Manager
+        mRecyclerView.setLayoutManager(mLayoutManager);
+
+        // Drawer object Assigned to the view
+        Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, Drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                // code here will execute once the drawer is opened( As I dont want anything happened whe drawer is
+                // open I am not going to put anything here)
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                // Code here will execute once drawer is closed
+            }
+
+        };
+
+        // Drawer Toggle Object Made
+        // Drawer Listener set to the Drawer toggle
+        Drawer.setDrawerListener(mDrawerToggle);
+        // Finally we set the drawer toggle sync State
+        mDrawerToggle.syncState();
+
 
         // check to see if anyone is logged in before we start this intent
         // if getCurrentUser() class method returns a parse user
@@ -252,9 +324,6 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, currentUser.getUsername());
         }
 
-//        // Set up the action bar.
-//        final ActionBar actionBar = getSupportActionBar();
-//        actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
@@ -266,10 +335,10 @@ public class MainActivity extends AppCompatActivity {
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
 
-
-        // Assiging the Sliding Tab Layout View
+        // Assigning the Sliding Tab Layout View
         tabs = (SlidingTabLayout) findViewById(R.id.tabs);
-        tabs.setDistributeEvenly(true); // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
+        // To make the Tabs Fixed set this true, This makes the tabs Space Evenly in Available width
+        tabs.setDistributeEvenly(true);
 
         // Setting Custom Color for the Scroll bar indicator of the Tab View
         tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
@@ -282,29 +351,6 @@ public class MainActivity extends AppCompatActivity {
         // Setting the ViewPager For the SlidingTabsLayout
         tabs.setViewPager(mViewPager);
 
-        // When swiping between different sections, select the corresponding
-        // tab. We can also use ActionBar.Tab#select() to do this if we have
-        // a reference to the Tab.
-        // this calls back to the action bar and sets the tab to the new navigation item
-        // this makes sure that the actions bar tab and the view pages stay in sync
-//        mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-//            @Override
-//            public void onPageSelected(int position) {
-//                actionBar.setSelectedNavigationItem(position);
-//            }
-//        });
-
-//        // For each of the sections in the app, add a tab to the action bar.
-//        for (int i = 0; i < mSectionsPagerAdapter.getCount(); i++) {
-//            // Create a tab with text corresponding to the page title defined by
-//            // the adapter. Also specify this Activity object, which implements
-//            // the TabListener interface, as the callback (listener) for when
-//            // this tab is selected.
-//            actionBar.addTab(
-//                    actionBar.newTab()
-//                            .setText(mSectionsPagerAdapter.getPageTitle(i))
-//                            .setTabListener(this));
-//        }
     }
 
     @Override
@@ -409,7 +455,6 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -430,7 +475,7 @@ public class MainActivity extends AppCompatActivity {
                 ParseUser.logOut();
                 navigateToLogin();
                 break;
-            case R.id.action_edit_friends:
+            case R.id.action_add_friends:
                 // create and start and new intent
                 Intent intent = new Intent(this, EditFriendsActivity.class);
                 startActivity(intent);
@@ -441,8 +486,8 @@ public class MainActivity extends AppCompatActivity {
                 // get the list the strings file
                 // code for listener will be long, so create a member variable for it and pass that in instead
                 builder.setItems(R.array.camera_choices, mDialogListenerCamera);
-                AlertDialog dialog = builder.create();
-                dialog.show();
+                AlertDialog dialogCamera = builder.create();
+                dialogCamera.show();
                 break;
             case R.id.action_plot_route:
                 // add code for an alert dialog
@@ -454,25 +499,7 @@ public class MainActivity extends AppCompatActivity {
                 dialogPlot.show();
                 break;
         }
-
-        // add a new case for the camera button where we have our options for log out and editing friends
-
         return super.onOptionsItemSelected(item);
     }
-
-//    @Override
-//    public void onTabSelected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-//        // When the given tab is selected, switch to the corresponding page in the ViewPager.
-//        mViewPager.setCurrentItem(tab.getPosition());
-//    }
-//
-//    @Override
-//    public void onTabUnselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-//    }
-//
-//    @Override
-//    public void onTabReselected(ActionBar.Tab tab, FragmentTransaction fragmentTransaction) {
-//    }
-
 
 }

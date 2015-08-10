@@ -2,8 +2,8 @@ package com.khackett.runmate;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -14,6 +14,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.khackett.runmate.utils.ParseConstants;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
@@ -27,9 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RouteRecipientsActivity extends ListActivity {
-
-    // Declaring the Toolbar Object
-    private Toolbar toolbar;
 
     public static final String TAG = RouteRecipientsActivity.class.getSimpleName();
 
@@ -57,18 +55,10 @@ public class RouteRecipientsActivity extends ListActivity {
 
         setContentView(R.layout.activity_route_recipients);
 
-//        // Attaching the toolbar layout to the toolbar object
-//        toolbar = (Toolbar) findViewById(R.id.tool_bar);
-//        // Setting toolbar as the ActionBar with setSupportActionBar() call
-//        setSupportActionBar(toolbar);
-
-        // line to ensure the action bar displays in the layout
-        // ((AppCompatActivity) getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
-        // getActionBar().setDisplayHomeAsUpEnabled(true);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
 
         // the list view keeps track of items that are selected (this is the check property on each item)
         // loop through the list to see who is checked - do this when we are ready to send
-
         // get the default list view associated with this activity
         getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);  // we can now check and uncheck multiple friends
 
@@ -166,17 +156,15 @@ public class RouteRecipientsActivity extends ListActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+        // Handle action bar item clicks here. The action bar will automatically handle clicks on the Home/Up button,
+        // so long as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         } else if (id == R.id.action_send) {
-            // create a parse object for our message
-
+            // create a parse object for the route
             ParseObject route = createRoute();
 
             // the message variable will be null if something goes wrong
@@ -190,18 +178,17 @@ public class RouteRecipientsActivity extends ListActivity {
                 AlertDialog dialog = builder.create();
                 dialog.show();
             } else {
-                // create a send message that will accept the message as a parameter
+                // create a send message that will accept the route as a parameter
                 send(route);
 
-                // In either case, we want to send the user back to the main activity right after the message is sent.
-                // Use the activity method finish() to close the activity - this finishes the current activity and the
-                // the previous activity (main activity) will be displayed in the message once again
+                // Send the user back to the main activity right after the message is sent.
+                // Use finish() to close the current activity and start a new main activity intent
                 finish();
+                Intent intent = new Intent(this, MainActivity.class);
+                startActivity(intent);
             }
-
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -210,7 +197,6 @@ public class RouteRecipientsActivity extends ListActivity {
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) {
         super.onListItemClick(l, v, position, id);
-
         // check the number of items that are checked on the list
         if (l.getCheckedItemCount() > 0) {
             // set the menuItem to visible if an item is clicked
@@ -219,9 +205,6 @@ public class RouteRecipientsActivity extends ListActivity {
             // otherwise, if it is 0, then hide the menu item
             mSendMenuItem.setVisible(false);
         }
-
-        // add a listener for the send button
-        // menu items fire the onOptionsItemSelected() method (such as the home button)
     }
 
     protected ParseObject createRoute() {

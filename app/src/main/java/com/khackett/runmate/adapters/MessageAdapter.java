@@ -1,4 +1,4 @@
-package com.khackett.runmate;
+package com.khackett.runmate.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -8,6 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.khackett.runmate.R;
+import com.khackett.runmate.utils.ParseConstants;
 import com.parse.ParseObject;
 
 import java.util.List;
@@ -26,7 +28,6 @@ public class MessageAdapter extends ArrayAdapter<ParseObject> {
     protected List<ParseObject> mMessages;
 
     // pass the list of activities to the MessageAdapter
-
 
     // create a constructor
     public MessageAdapter(Context context, List<ParseObject> messages) {
@@ -83,7 +84,6 @@ public class MessageAdapter extends ArrayAdapter<ParseObject> {
 
         return convertView;
     }
-
 
     // class that contains the data that is going to be displayed in the custom layout
     private static class ViewHolder {

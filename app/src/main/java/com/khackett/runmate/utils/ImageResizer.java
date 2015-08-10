@@ -1,4 +1,4 @@
-package com.khackett.runmate;
+package com.khackett.runmate.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;

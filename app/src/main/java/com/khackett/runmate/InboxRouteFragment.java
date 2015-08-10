@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import com.google.android.gms.maps.GoogleMap;
+import com.khackett.runmate.adapters.MessageAdapter;
+import com.khackett.runmate.utils.ParseConstants;
 import com.parse.FindCallback;
 import com.parse.ParseException;
 import com.parse.ParseObject;

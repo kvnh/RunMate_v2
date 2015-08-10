@@ -21,6 +21,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.khackett.runmate.utils.DirectionsJSONParser;
 
 import org.json.JSONObject;
 
@@ -51,9 +52,6 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_activity_directions_multiple);
 
-        // set the actionbar in the map fragment
-        // getActionBar().setDisplayHomeAsUpEnabled(true);
-
         // Initializing array list
         markerPoints = new ArrayList<LatLng>();
 
@@ -72,7 +70,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             mMap.getUiSettings().setZoomControlsEnabled(true);
 
             // centre the camera to the users current location
-            // centreCamera();
+            centreCamera();
 
             // Setting onclick event listener for the map
             mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
