@@ -34,7 +34,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<AdapterNavigation.Vi
     // Creating a ViewHolder which extends the RecyclerView View Holder
     // ViewHolder are used to to store the inflated views in order to recycle them
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        int Holderid;
+        int holderId;
         TextView textView;
         ImageView imageView;
         ImageView profile;
@@ -52,7 +52,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<AdapterNavigation.Vi
                 // Creating ImageView object with the id of ImageView from item_row.xml
                 imageView = (ImageView) itemView.findViewById(R.id.rowIcon);
                 // setting holder id as 1 as the object being populated are of type item row
-                Holderid = 1;
+                holderId = 1;
             } else {
                 // Creating Text View object from header.xml for name
                 Name = (TextView) itemView.findViewById(R.id.name);
@@ -61,7 +61,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<AdapterNavigation.Vi
                 // Creating Image view object from header.xml for profile pic
                 profile = (ImageView) itemView.findViewById(R.id.circleView);
                 // Setting holder id = 0 as the object being populated are of type header view
-                Holderid = 0;
+                holderId = 0;
             }
         }
     }
@@ -106,7 +106,7 @@ public class AdapterNavigation extends RecyclerView.Adapter<AdapterNavigation.Vi
     @Override
     public void onBindViewHolder(AdapterNavigation.ViewHolder holder, int position) {
         // as the list view is going to be called after the header view so we decrement the
-        if (holder.Holderid == 1) {
+        if (holder.holderId == 1) {
             // position by 1 and pass it to the holder while setting the text and image
             // Setting the Text with the array of our Titles
             holder.textView.setText(mNavTitles[position - 1]);

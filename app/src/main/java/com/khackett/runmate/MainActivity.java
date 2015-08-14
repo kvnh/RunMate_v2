@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
     //First We Declare Titles And Icons For Our Navigation Drawer List View
     //This Icons And Titles Are holded in an Array as you can see
-    String TITLES[] = {"My Profile", "Upcoming Runs", "Settings"};
-    int ICONS[] = {R.mipmap.ic_action_add_friend, R.mipmap.ic_directions_run_white_24dp, R.drawable.ic_setting_light};
+    String TITLES[] = {"My Profile", "My Runs", "Upcoming Runs", "Settings"};
+    int ICONS[] = {R.mipmap.ic_action_add_friend, R.mipmap.ic_directions_run_white_24dp, R.mipmap.ic_directions_run_white_24dp, R.drawable.ic_setting_light};
 
     //Similarly we Create a String Resource for the name and email in the header view
     //And we also create a int resource for profile picture in the header view

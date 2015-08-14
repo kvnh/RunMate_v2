@@ -15,7 +15,6 @@ import java.util.List;
  */
 public class DirectionsJSONParser {
 
-
     /**
      * Receives a JSONObject and returns a list of lists containing latitude and longitude
      */
@@ -62,7 +61,6 @@ public class DirectionsJSONParser {
             e.printStackTrace();
         } catch (Exception e) {
         }
-
         return routes;
     }
 
@@ -100,8 +98,6 @@ public class DirectionsJSONParser {
                     (((double) lng / 1E5)));
             poly.add(p);
         }
-
         return poly;
     }
-
 }

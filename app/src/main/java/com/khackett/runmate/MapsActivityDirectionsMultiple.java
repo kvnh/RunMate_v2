@@ -13,6 +13,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -23,6 +24,8 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.khackett.runmate.utils.DirectionsJSONParser;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -37,14 +40,15 @@ import java.util.List;
 
 public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
-
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     double mLatitude = 0;
     double mLongitude = 0;
     ArrayList<LatLng> markerPoints;
+    ArrayList<Double> distanceCount;
 
-    // member variable for the send route button
+    // member variable for the send route button and distance counter display
     protected Button mButtonSend;
+    protected TextView mDistanceCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +58,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
         // Initializing array list
         markerPoints = new ArrayList<LatLng>();
+        distanceCount = new ArrayList<Double>();
 
         // Getting reference to SupportMapFragment of the activity_maps
         SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -124,12 +129,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                         System.out.println(line);
                     }
 
-                    System.out.println("Print array...");
-                    System.out.println(markerPoints);
-
                 }
             });
-
 
             // The map will be cleared on long click
             mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -144,9 +145,10 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
         }
 
-
         // set up member variable for the send route button
         mButtonSend = (Button) findViewById(R.id.btn_send);
+
+        mDistanceCount = (TextView) findViewById(R.id.distanceCount);
 
         // add an onClickListener for the send route button
         mButtonSend.setOnClickListener(new View.OnClickListener() {
@@ -190,25 +192,18 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
      * @return
      */
     private String getDirectionsUrl(LatLng origin, LatLng dest) {
-
         // Origin of route
         String stringOrigin = "origin=" + origin.latitude + "," + origin.longitude;
-
         // Destination of route
         String stringDestination = "destination=" + dest.latitude + "," + dest.longitude;
-
         // Sensor enabled
         String sensor = "sensor=false";
-
         // Building the parameters to the web service
         String parameters = stringOrigin + "&" + stringDestination;
-
         // Output format
         String output = "json";
-
         // transport mode
         String transMode = "&mode=walking";
-
         // Building the url to the web service
         // see https://developers.google.com/maps/documentation/directions/#DirectionsRequests
         // eg. https://maps.googleapis.com/maps/api/directions/json?origin=40.722543,-73.998585&destination=40.7577,-73.9857&mode=walking
@@ -217,7 +212,6 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
         return url;
     }
-
 
     /**
      * A method to download json data from url
@@ -228,29 +222,20 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(strUrl);
-
             // Creating an http connection to communicate with url
             urlConnection = (HttpURLConnection) url.openConnection();
-
             // Connecting to url
             urlConnection.connect();
-
             // Reading data from url
             iStream = urlConnection.getInputStream();
-
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
             StringBuffer sb = new StringBuffer();
-
             String line = "";
             while ((line = br.readLine()) != null) {
                 sb.append(line);
             }
-
             data = sb.toString();
-
             br.close();
-
         } catch (Exception e) {
             Log.d("Problem downloading url", e.toString());
         } finally {
@@ -267,10 +252,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         // Downloading data in non-ui thread
         @Override
         protected String doInBackground(String... url) {
-
             // For storing data from web service
             String data = "";
-
             try {
                 // Fetching the data from web service
                 data = downloadUrl(url[0]);
@@ -284,14 +267,14 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-
+            // create a new ParserTask object and invoke thread for parsing JSON data
             ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
             parserTask.execute(result);
+            // create a new ParseDistanceTask object and invoke thread for parsing JSON data
+            ParseDistanceTask parseDistanceTask = new ParseDistanceTask();
+            parseDistanceTask.execute(result);
         }
     }
-
 
     /**
      * A class to parse the Google Places in JSON format
@@ -301,16 +284,15 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         // Parsing the data in non-ui thread
         @Override
         protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
             JSONObject jObject;
             List<List<HashMap<String, String>>> routes = null;
-
             try {
                 jObject = new JSONObject(jsonData[0]);
                 DirectionsJSONParser parser = new DirectionsJSONParser();
-
                 // Starts parsing data
                 routes = parser.parse(jObject);
+                // send JSON object to mapDistance() method to update the distance
+                // mapDistance(jObject);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -323,37 +305,72 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             ArrayList<LatLng> points = null;
             PolylineOptions lineOptions = null;
             MarkerOptions markerOptions = new MarkerOptions();
-
             // Traversing through all the routes
             for (int i = 0; i < result.size(); i++) {
                 points = new ArrayList<LatLng>();
                 lineOptions = new PolylineOptions();
-
                 // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
-
                 // Fetching all the points in i-th route
                 for (int j = 0; j < path.size(); j++) {
                     HashMap<String, String> point = path.get(j);
-
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
-
                     points.add(position);
                 }
-
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
                 lineOptions.width(6);
                 lineOptions.color(Color.BLUE);
             }
-
             // Drawing polyline in the Google Map for the i-th route
             mMap.addPolyline(lineOptions);
         }
     }
 
+    /**
+     * A class to parse the Google Places in JSON format
+     */
+    private class ParseDistanceTask extends AsyncTask<String, Integer, Double> {
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected Double doInBackground(String... jsonData) {
+            JSONObject jsonObject;
+            Double distance = null;
+            try {
+                jsonObject = new JSONObject(jsonData[0]);
+                // get all routes from the routes array
+                JSONArray array = jsonObject.getJSONArray("routes");
+                // get the first route in the JSON object
+                JSONObject routes = array.getJSONObject(0);
+                // get all of the legs from the route and add to legs array
+                JSONArray legs = routes.getJSONArray("legs");
+                // get the first leg in the JSON object
+                JSONObject steps = legs.getJSONObject(0);
+                // get the distance element
+                JSONObject distanceJSON = steps.getJSONObject("distance");
+                // get the value from the distance element and assign to distance
+                distance = Double.parseDouble(distanceJSON.getString("value"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            return distance;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(Double distance) {
+            double routeDistance = 0;
+            distanceCount.add(distance);
+            for (Double step : distanceCount) {
+                routeDistance += step;
+            }
+            System.out.println("Total Distance calculated in AsyncTask in m = " + routeDistance);
+            mDistanceCount.setText(routeDistance / 1000 + "");
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -362,13 +379,11 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         return true;
     }
 
-
     @Override
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
     }
-
 
     private void setUpMapIfNeeded() {
         // Do a null check to confirm that we have not already instantiated the map.
@@ -391,18 +406,14 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
      * set the camera to centre on the users current location
      */
     public void centreCamera() {
-
         // http://stackoverflow.com/questions/23226056/to-use-or-not-to-use-getmylocation-in-google-maps-api-v2-for-android
 
         // Getting LocationManager object from System Service LOCATION_SERVICE
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
         // Creating a criteria object to retrieve provider
         Criteria criteria = new Criteria();
-
         // Getting the name of the best provider
         String provider = locationManager.getBestProvider(criteria, true);
-
         // Getting Current Location From GPS
         Location location = locationManager.getLastKnownLocation(provider);
 
