@@ -48,6 +48,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
     // member variable for the send route button and distance counter display
     protected Button mButtonSend;
+    protected Button mButtonUndo;
     protected TextView mDistanceCount;
 
     @Override
@@ -145,9 +146,9 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
         }
 
-        // set up member variable for the send route button
+        // set up member variables for each UI component
         mButtonSend = (Button) findViewById(R.id.btn_send);
-
+        mButtonUndo = (Button) findViewById(R.id.btn_undo);
         mDistanceCount = (TextView) findViewById(R.id.distanceCount);
 
         // add an onClickListener for the send route button
@@ -179,6 +180,13 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                     // start RouteRecipientsActivity in order to choose recipients
                     startActivity(createRouteIntent);
                 }
+            }
+        });
+
+        mButtonUndo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
             }
         });
     }
@@ -368,7 +376,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                 routeDistance += step;
             }
             System.out.println("Total Distance calculated in AsyncTask in m = " + routeDistance);
-            mDistanceCount.setText(routeDistance / 1000 + "");
+            mDistanceCount.setText(routeDistance / 1000 + "km");
         }
     }
 

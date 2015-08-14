@@ -94,8 +94,7 @@ public class DirectionsJSONParser {
             int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
             lng += dlng;
 
-            LatLng p = new LatLng((((double) lat / 1E5)),
-                    (((double) lng / 1E5)));
+            LatLng p = new LatLng((((double) lat / 1E5)), (((double) lng / 1E5)));
             poly.add(p);
         }
         return poly;

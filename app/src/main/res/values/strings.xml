@@ -85,5 +85,6 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="distance_count">0 km</string>
+    <string name="str_btn_undo">Undo</string>
 
 </resources>
