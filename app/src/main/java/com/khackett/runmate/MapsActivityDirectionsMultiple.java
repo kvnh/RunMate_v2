@@ -84,7 +84,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                 @Override
                 public void onMapClick(LatLng point) {
 
-                    // animates the camera to centre on the touched position
+                    // animate camera to centre on touched position
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
 
                     // Adding new latlng point to the array list
@@ -187,6 +187,28 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             @Override
             public void onClick(View v) {
 
+                // create variable for the 2nd last point clicked and assign value form markerPoints array list
+                LatLng lastPoint;
+                lastPoint = markerPoints.get(markerPoints.size() - 2);
+
+                // animate camera to centre on the previously touched position
+                System.out.println("Centering camera to previous position at " + lastPoint.toString());
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(lastPoint));
+
+                // remove line from the map
+
+
+                // remove value from the markerPoints array list
+
+
+                // update the distance text
+                double routeDistance = 0;
+                distanceCount.remove(distanceCount.size() - 1);
+                for (Double step : distanceCount) {
+                    routeDistance += step;
+                }
+                System.out.println("Total Distance calculated in undo in m = " + routeDistance);
+                mDistanceCount.setText(routeDistance / 1000 + "km");
             }
         });
     }
@@ -312,7 +334,6 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
             ArrayList<LatLng> points = null;
             PolylineOptions lineOptions = null;
-            MarkerOptions markerOptions = new MarkerOptions();
             // Traversing through all the routes
             for (int i = 0; i < result.size(); i++) {
                 points = new ArrayList<LatLng>();
@@ -326,6 +347,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
                     points.add(position);
+                    System.out.println("Printing points: " + points);
                 }
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
