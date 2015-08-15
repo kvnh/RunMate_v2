@@ -21,6 +21,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.khackett.runmate.utils.DirectionsJSONParser;
 
@@ -45,6 +46,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
     double mLongitude = 0;
     ArrayList<LatLng> markerPoints;
     ArrayList<Double> distanceCount;
+    List<List<HashMap<String, String>>> allPoints;
+    List<Polyline> polylines;
 
     // member variable for the send route button and distance counter display
     protected Button mButtonSend;
@@ -57,9 +60,10 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_activity_directions_multiple);
 
-        // Initializing array list
+        // Initializing array lists
         markerPoints = new ArrayList<LatLng>();
         distanceCount = new ArrayList<Double>();
+        polylines = new ArrayList<Polyline>();
 
         // Getting reference to SupportMapFragment of the activity_maps
         SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -76,7 +80,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             mMap.getUiSettings().setZoomControlsEnabled(true);
 
             // centre the camera to the users current location
-            centreCamera();
+            // centreCamera();
 
             // Setting onclick event listener for the map
             mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
@@ -195,11 +199,17 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                 System.out.println("Centering camera to previous position at " + lastPoint.toString());
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(lastPoint));
 
-                // remove line from the map
 
+                // remove polyline object from the map
+                for (Polyline line : polylines) {
+                    if (polylines.get(polylines.size() - 1).equals(line)) {
+                        line.remove();
+                        polylines.remove(line);
+                    }
+                }
 
-                // remove value from the markerPoints array list
-
+                // remove last value from the markerPoints array list
+                markerPoints.remove(markerPoints.size() - 1);
 
                 // update the distance text
                 double routeDistance = 0;
@@ -207,7 +217,9 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                 for (Double step : distanceCount) {
                     routeDistance += step;
                 }
+
                 System.out.println("Total Distance calculated in undo in m = " + routeDistance);
+                // output new value to ui
                 mDistanceCount.setText(routeDistance / 1000 + "km");
             }
         });
@@ -319,10 +331,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             try {
                 jObject = new JSONObject(jsonData[0]);
                 DirectionsJSONParser parser = new DirectionsJSONParser();
-                // Starts parsing data
+                // Start parsing data
                 routes = parser.parse(jObject);
-                // send JSON object to mapDistance() method to update the distance
-                // mapDistance(jObject);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -332,11 +342,10 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points = null;
+
             PolylineOptions lineOptions = null;
             // Traversing through all the routes
             for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<LatLng>();
                 lineOptions = new PolylineOptions();
                 // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
@@ -346,16 +355,13 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
-                    points.add(position);
-                    System.out.println("Printing points: " + points);
+                    // Adding all the points in the route to LineOptions
+                    lineOptions.add(position).width(6).color(Color.BLUE);
+                    System.out.println("Printing test data");
                 }
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(6);
-                lineOptions.color(Color.BLUE);
+                // add Polyline to list and draw on map
+                polylines.add(mMap.addPolyline(lineOptions));
             }
-            // Drawing polyline in the Google Map for the i-th route
-            mMap.addPolyline(lineOptions);
         }
     }
 
