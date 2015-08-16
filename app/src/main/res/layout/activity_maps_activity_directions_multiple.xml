@@ -18,10 +18,21 @@
             android:id="@+id/btn_undo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="2dp"
+            android:layout_marginStart="2dp"
             android:layout_weight="1"
             android:background="#40ffffff"
+            android:gravity="center_vertical|center_horizontal"
             android:text="@string/str_btn_undo"
+            android:textColor="#0A0AFF"/>
+
+        <Button
+            android:id="@+id/btn_complete_loop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#40ffffff"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/str_btn_complete_loop"
             android:textColor="#0A0AFF"/>
 
         <TextView
@@ -31,7 +42,7 @@
             android:layout_weight="1"
             android:gravity="center"
             android:text="@string/distance_count"
-            android:textSize="24sp"/>
+            android:textSize="16sp"/>
 
         <Button
             android:id="@+id/btn_send"
@@ -39,6 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#40ffffff"
+            android:gravity="center_vertical|center_horizontal"
             android:text="@string/str_btn_send"
             android:textColor="#0A0AFF"/>
 

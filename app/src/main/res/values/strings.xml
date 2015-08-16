@@ -73,18 +73,20 @@
     <string name="title_activity_maps_activity_directions_multiple">MapDirectionsMultiple</string>
 
     <string name="route_creation_error_message">Please ensure you have at least 2 points selected</string>
-    <string name="route_creation_error_title">Sorry, there was a problem</string>
+    <string name="route_creation_error_title">Tap the map</string>
+    <string name="route_undo_error_message">No more routes to undo</string>
+    <string name="route_undo_error_title">Steady on...</string>
     <string name="title_activity_route_recipients">RouteRecipientsActivity</string>
     <string name="success_route">Route sent</string>
     <string name="error_sending_route">There was an error sending your route. Please try again</string>
     <string name="title_activity_maps_activity_display_route">Map</string>
     <string name="title_activity_inbox_route_fragment">InboxRouteFragment</string>
 
-
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="distance_count">0 km</string>
     <string name="str_btn_undo">Undo</string>
+    <string name="str_btn_complete_loop">Complete Loop</string>s
 
 </resources>

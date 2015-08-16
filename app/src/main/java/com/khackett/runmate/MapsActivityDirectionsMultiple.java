@@ -46,12 +46,12 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
     double mLongitude = 0;
     ArrayList<LatLng> markerPoints;
     ArrayList<Double> distanceCount;
-    List<List<HashMap<String, String>>> allPoints;
     List<Polyline> polylines;
 
     // member variable for the send route button and distance counter display
     protected Button mButtonSend;
     protected Button mButtonUndo;
+    protected Button mButtonCompleteLoop;
     protected TextView mDistanceCount;
 
     @Override
@@ -87,52 +87,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
                 @Override
                 public void onMapClick(LatLng point) {
-
-                    // animate camera to centre on touched position
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
-
-                    // Adding new latlng point to the array list
-                    markerPoints.add(point);
-
-                    // Creating MarkerOptions object
-                    MarkerOptions marker = new MarkerOptions();
-
-                    // Sets the location for the marker to the touched point
-                    marker.position(point);
-
-                    /**
-                     * For the start location, the colour of the marker is GREEN and
-                     * for the end location, the colour of the marker is RED.
-                     */
-                    if (markerPoints.size() == 1) {
-                        // place a green marker for the start position
-                        marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-                    }
-
-                    if (markerPoints.size() >= 2) {
-                        LatLng point1 = markerPoints.get(markerPoints.size() - 2);
-                        LatLng point2 = markerPoints.get(markerPoints.size() - 1);
-
-                        // marker.position(point2).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                        // marker.position(point2).visible(true);
-                        marker.position(point1).visible(false);
-
-                        // Getting URL to the Google Directions API
-                        // send these values to the getDirectionsUrl() method and assign returned value to string variable url
-                        String url = getDirectionsUrl(point1, point2);
-                        // create a DownloadTask object - see nested class below
-                        DownloadTask downloadTask = new DownloadTask();
-                        // Start downloading json data from Google Directions API
-                        downloadTask.execute(url);
-                    }
-
-                    // Add a new marker to the map
-                    mMap.addMarker(marker);
-
-                    System.out.println("Enhanced for");
-                    for (LatLng line : markerPoints) {
-                        System.out.println(line);
-                    }
+                    // plot tapped point on map
+                    plotPoint(point);
 
                 }
             });
@@ -153,6 +109,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         // set up member variables for each UI component
         mButtonSend = (Button) findViewById(R.id.btn_send);
         mButtonUndo = (Button) findViewById(R.id.btn_undo);
+        mButtonCompleteLoop = (Button) findViewById(R.id.btn_complete_loop);
         mDistanceCount = (TextView) findViewById(R.id.distanceCount);
 
         // add an onClickListener for the send route button
@@ -161,24 +118,11 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             public void onClick(View v) {
 
                 // first ensure that there are at least 2 points in the ArrayList
-                if (markerPoints.size() <= 1) {
-                    // if not, display a message to the user - use a dialog so that some user interaction is required before it disappears
-                    // use Builder to build and configure the alert
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
-                    // set the message title and text for the button - use String resources for all of these values
-                    // chain the methods together as they are all referencing the builder object
-                    builder.setMessage(R.string.route_creation_error_message)
-                            .setTitle(R.string.route_creation_error_title)
-                                    // button to dismiss the dialog.  Set the listener to null as we only want to dismiss the dialog
-                                    // ok is gotten from android resources
-                            .setPositiveButton(android.R.string.ok, null);
-                    // we need to create a dialog and show it
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                if (!markerCountValidCheck()) {
+                    // alert user to add more points
                 } else {
                     // declare intent to capture a route using whatever camera app is available
                     Intent createRouteIntent = new Intent(MapsActivityDirectionsMultiple.this, RouteRecipientsActivity.class);
-
                     // using android.location to extend Parcelable in order to create and store the LatLng values in an arrayList
                     createRouteIntent.putParcelableArrayListExtra("markerPoints", markerPoints);
                     // start RouteRecipientsActivity in order to choose recipients
@@ -191,38 +135,135 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             @Override
             public void onClick(View v) {
 
-                // create variable for the 2nd last point clicked and assign value form markerPoints array list
-                LatLng lastPoint;
-                lastPoint = markerPoints.get(markerPoints.size() - 2);
+                if (markerPoints.size() <= 1) {
+                    // alert user that they cannot trigger the undo action any more
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
+                    // set the message title and text for the button - use String resources for all of these values
+                    // chain the methods together as they are all referencing the builder object
+                    builder.setMessage(R.string.route_undo_error_message)
+                            .setTitle(R.string.route_undo_error_title)
+                                    // button to dismiss the dialog.  Set the listener to null as we only want to dismiss the dialog
+                                    // ok is gotten from android resources
+                            .setPositiveButton(android.R.string.ok, null);
+                    // we need to create a dialog and show it
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                } else {
 
-                // animate camera to centre on the previously touched position
-                System.out.println("Centering camera to previous position at " + lastPoint.toString());
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(lastPoint));
+                    // create variable for the 2nd last point clicked and assign value form markerPoints array list
+                    LatLng lastPoint;
+                    lastPoint = markerPoints.get(markerPoints.size() - 2);
 
+                    // animate camera to centre on the previously touched position
+                    System.out.println("Centering camera to previous position at " + lastPoint.toString());
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(lastPoint));
 
-                // remove polyline object from the map
-                for (Polyline line : polylines) {
-                    if (polylines.get(polylines.size() - 1).equals(line)) {
-                        line.remove();
-                        polylines.remove(line);
+                    // remove polyline object from the map
+                    for (Polyline line : polylines) {
+                        if (polylines.get(polylines.size() - 1).equals(line)) {
+                            line.remove();
+                            polylines.remove(line);
+                        }
                     }
+
+                    // remove last value from the markerPoints array list
+                    markerPoints.remove(markerPoints.size() - 1);
+
+                    // update the distance text
+                    double routeDistance = 0;
+                    distanceCount.remove(distanceCount.size() - 1);
+                    for (Double step : distanceCount) {
+                        routeDistance += step;
+                    }
+
+                    System.out.println("Total Distance calculated in undo in m = " + routeDistance);
+                    // output new value to ui
+                    mDistanceCount.setText(routeDistance / 1000 + "km");
                 }
-
-                // remove last value from the markerPoints array list
-                markerPoints.remove(markerPoints.size() - 1);
-
-                // update the distance text
-                double routeDistance = 0;
-                distanceCount.remove(distanceCount.size() - 1);
-                for (Double step : distanceCount) {
-                    routeDistance += step;
-                }
-
-                System.out.println("Total Distance calculated in undo in m = " + routeDistance);
-                // output new value to ui
-                mDistanceCount.setText(routeDistance / 1000 + "km");
             }
         });
+
+        mButtonCompleteLoop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // check that the minimum number of points have been selected
+                if (!markerCountValidCheck()) {
+                    // alert user to add more points
+                } else {
+                    // complete loop by plotting the first point plotted
+                    plotPoint(markerPoints.get(0));
+                }
+            }
+        });
+    }
+
+
+    private void plotPoint(LatLng point) {
+        // animate camera to centre on touched position
+        mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
+
+        // Adding new latlng point to the array list
+        markerPoints.add(point);
+
+        // Creating MarkerOptions object
+        MarkerOptions marker = new MarkerOptions();
+
+        // Sets the location for the marker to the touched point
+        marker.position(point);
+
+        /**
+         * For the start location, the colour of the marker is GREEN and
+         * for the end location, the colour of the marker is RED.
+         */
+        if (markerPoints.size() == 1) {
+            // place a green marker for the start position
+            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+        }
+
+        if (markerPoints.size() >= 2) {
+            LatLng point1 = markerPoints.get(markerPoints.size() - 2);
+            LatLng point2 = markerPoints.get(markerPoints.size() - 1);
+
+            // marker.position(point2).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+            // marker.position(point2).visible(true);
+            marker.position(point1).visible(false);
+
+            // Getting URL to the Google Directions API
+            // send these values to the getDirectionsUrl() method and assign returned value to string variable url
+            String url = getDirectionsUrl(point1, point2);
+            // create a DownloadTask object - see nested class below
+            DownloadTask downloadTask = new DownloadTask();
+            // Start downloading json data from Google Directions API
+            downloadTask.execute(url);
+        }
+
+        // Add a new marker to the map
+        mMap.addMarker(marker);
+
+        System.out.println("Enhanced for");
+        for (LatLng line : markerPoints) {
+            System.out.println(line);
+        }
+    }
+
+    private boolean markerCountValidCheck() {
+        // ensure that there are at least 2 points in the ArrayList
+        if (markerPoints.size() <= 1) {
+            // if not, display a message to the user - use a dialog so that some user interaction is required before it disappears
+            // use Builder to build and configure the alert
+            AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
+            // set the message title and text for the button - use String resources for all of these values
+            // chain the methods together as they are all referencing the builder object
+            builder.setMessage(R.string.route_creation_error_message)
+                    .setTitle(R.string.route_creation_error_title)
+                    .setPositiveButton(android.R.string.ok, null);
+            // we need to create a dialog and show it
+            AlertDialog dialog = builder.create();
+            dialog.show();
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -357,7 +398,6 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                     LatLng position = new LatLng(lat, lng);
                     // Adding all the points in the route to LineOptions
                     lineOptions.add(position).width(6).color(Color.BLUE);
-                    System.out.println("Printing test data");
                 }
                 // add Polyline to list and draw on map
                 polylines.add(mMap.addPolyline(lineOptions));
