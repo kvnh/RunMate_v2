@@ -28,7 +28,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 public class MapsActivityTrackRun extends FragmentActivity implements
@@ -36,19 +35,24 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     /**
-     * request code to send to Google Play Services in case of connection failure
+     * Request code to send to Google Play Services in case of connection failure
      */
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     /**
      * The desired interval for location updates.
      */
-    public static final long MIN_TIME_BETWEEN_UPDATES_MILLISECONDS = 1000 * 5;
+    public static final long MIN_UPDATE_INTERVAL_MILLISECONDS = 1000 * 5;
 
     /**
      * The fastest rate for location updates - updates will never be more frequent than this value.
      */
-    public static final long FASTEST_TIME_BETWEEN_UPDATES_MILLISECONDS = 1000 * 1;
+    public static final long FASTEST_UPDATE_INTERVAL_MILLISECONDS = 1000 * 1;
+
+    /**
+     * The minimum distance from previous update to accept new update (in meters).
+     */
+    private static int DISPLACEMENT_METRES = 1;
 
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -234,10 +238,11 @@ public class MapsActivityTrackRun extends FragmentActivity implements
                 // request the most precise location possible
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                         // set update interval for active location updates
-                .setInterval(MIN_TIME_BETWEEN_UPDATES_MILLISECONDS)
+                .setInterval(MIN_UPDATE_INTERVAL_MILLISECONDS)
                         // set fastest rate for active location updates
                         // app will never receive updates faster than this setting
-                .setFastestInterval(FASTEST_TIME_BETWEEN_UPDATES_MILLISECONDS);
+                .setFastestInterval(FASTEST_UPDATE_INTERVAL_MILLISECONDS)
+                .setSmallestDisplacement(DISPLACEMENT_METRES);
     }
 
     /**
