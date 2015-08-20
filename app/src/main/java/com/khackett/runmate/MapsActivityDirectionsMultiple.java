@@ -20,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -39,16 +40,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivityDirectionsMultiple extends FragmentActivity {
+public class MapsActivityDirectionsMultiple extends FragmentActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, View.OnClickListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     double mLatitude = 0;
     double mLongitude = 0;
+    double mLatitudeMax = 0;
+    double mLongitudeMax = 0;
+    double mLatitudeMin = 0;
+    double mLongitudeMin = 0;
     ArrayList<LatLng> markerPoints;
+    ArrayList<LatLng> minMaxLatLng;
     ArrayList<Double> distanceCount;
     List<Polyline> polylines;
 
-    // member variable for the send route button and distance counter display
+    // Member variable for the send route button and distance counter display
     protected Button mButtonSend;
     protected Button mButtonUndo;
     protected Button mButtonCompleteLoop;
@@ -62,6 +68,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
 
         // Initialising array lists
         markerPoints = new ArrayList<LatLng>();
+        minMaxLatLng = new ArrayList<LatLng>();
         distanceCount = new ArrayList<Double>();
         polylines = new ArrayList<Polyline>();
 
@@ -76,130 +83,144 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             // Enable MyLocation Button in the Map
             mMap.setMyLocationEnabled(true);
 
-            // set the zoom controls to visible
+            // Set the zoom controls to visible
             mMap.getUiSettings().setZoomControlsEnabled(true);
 
-            // centre the camera to the users current location
+            // Centre the camera to the users current location
             // centreCamera();
 
-            // Setting onclick event listener for the map
-            mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-
-                @Override
-                public void onMapClick(LatLng point) {
-                    // plot tapped point on map
-                    plotPoint(point);
-
-                }
-            });
-
-            // The map will be cleared on long click
-            mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-                @Override
-                public void onMapLongClick(LatLng point) {
-                    // Removes all the points from Google Map
-                    mMap.clear();
-                    // Removes all the points in the ArrayList
-                    markerPoints.clear();
-                }
-            });
+            // Setting onClick event listener for the map
+            mMap.setOnMapClickListener(this);
+            // Setting onClickLong event listener for the map
+            mMap.setOnMapLongClickListener(this);
 
         }
 
-        // set up member variables for each UI component
+        // Set up member variables for each UI component
         mButtonSend = (Button) findViewById(R.id.btn_send);
         mButtonUndo = (Button) findViewById(R.id.btn_undo);
         mButtonCompleteLoop = (Button) findViewById(R.id.btn_complete_loop);
         mDistanceCount = (TextView) findViewById(R.id.distanceCount);
 
-        // add an onClickListener for the send route button
-        mButtonSend.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        // Register buttons with the listener
+        mButtonSend.setOnClickListener(this);
+        mButtonUndo.setOnClickListener(this);
+        mButtonCompleteLoop.setOnClickListener(this);
 
-                // first ensure that there are at least 2 points in the ArrayList
-                if (!markerCountValidCheck()) {
-                    // alert user to add more points
-                } else {
-                    // declare intent to capture a route using whatever camera app is available
-                    Intent createRouteIntent = new Intent(MapsActivityDirectionsMultiple.this, RouteRecipientsActivity.class);
-                    // using android.location to extend Parcelable in order to create and store the LatLng values in an arrayList
-                    createRouteIntent.putParcelableArrayListExtra("markerPoints", markerPoints);
-                    // start RouteRecipientsActivity in order to choose recipients
-                    startActivity(createRouteIntent);
-                }
-            }
-        });
-
-        mButtonUndo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                if (markerPoints.size() <= 1) {
-                    // alert user that they cannot trigger the undo action any more
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
-                    // set the message title and text for the button - use String resources for all of these values
-                    // chain the methods together as they are all referencing the builder object
-                    builder.setMessage(R.string.route_undo_error_message)
-                            .setTitle(R.string.route_undo_error_title)
-                                    // button to dismiss the dialog.  Set the listener to null as we only want to dismiss the dialog
-                                    // ok is gotten from android resources
-                            .setPositiveButton(android.R.string.ok, null);
-                    // we need to create a dialog and show it
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-                } else {
-
-                    // create variable for the 2nd last point clicked and assign value form markerPoints array list
-                    LatLng lastPoint;
-                    lastPoint = markerPoints.get(markerPoints.size() - 2);
-
-                    // animate camera to centre on the previously touched position
-                    System.out.println("Centering camera to previous position at " + lastPoint.toString());
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(lastPoint));
-
-                    // remove polyline object from the map
-                    for (Polyline line : polylines) {
-                        if (polylines.get(polylines.size() - 1).equals(line)) {
-                            line.remove();
-                            polylines.remove(line);
-                        }
-                    }
-
-                    // remove last value from the markerPoints array list
-                    markerPoints.remove(markerPoints.size() - 1);
-
-                    // update the distance text
-                    double routeDistance = 0;
-                    distanceCount.remove(distanceCount.size() - 1);
-                    for (Double step : distanceCount) {
-                        routeDistance += step;
-                    }
-
-                    System.out.println("Total Distance calculated in undo in m = " + routeDistance);
-                    // output new value to ui
-                    mDistanceCount.setText(routeDistance / 1000 + "km");
-                }
-            }
-        });
-
-        mButtonCompleteLoop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // check that the minimum number of points have been selected
-                if (!markerCountValidCheck()) {
-                    // alert user to add more points
-                } else {
-                    // complete loop by plotting the first point plotted
-                    plotPoint(markerPoints.get(0));
-                }
-            }
-        });
     }
 
+    @Override
+    public void onMapClick(LatLng latLng) {
+        // Plot tapped point on map
+        plotPoint(latLng);
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        // Map will be cleared on long click
+        mMap.clear();
+        // Removes all the points in the ArrayList
+        markerPoints.clear();
+        minMaxLatLng.clear();
+    }
+
+    /**
+     * Called when a view has been clicked.
+     *
+     * @param v The view that was clicked.
+     */
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_send:
+                sendRoute();
+                break;
+            case R.id.btn_undo:
+                undoClick();
+                break;
+            case R.id.btn_complete_loop:
+                completeLoop();
+                break;
+            default:
+                System.out.println("Problem with input");
+        }
+    }
+
+    public void sendRoute() {
+        // First ensure that there are at least 2 points in the ArrayList
+        if (!markerCountValidCheck()) {
+            // alert user to add more points
+        } else {
+            // Declare intent to capture a route using whatever camera app is available
+            Intent createRouteIntent = new Intent(MapsActivityDirectionsMultiple.this, RouteRecipientsActivity.class);
+            // Using android.location to extend Parcelable in order to create and store the LatLng values in an arrayList
+            createRouteIntent.putParcelableArrayListExtra("markerPoints", markerPoints);
+            // Start RouteRecipientsActivity in order to choose recipients
+            startActivity(createRouteIntent);
+        }
+    }
+
+    public void undoClick() {
+        if (markerPoints.size() <= 1) {
+            // Alert user that they cannot trigger the undo action any more
+            AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
+            // Set the message title and text for the button - use String resources for all of these values
+            // Chain the methods together as they are all referencing the builder object
+            builder.setMessage(R.string.route_undo_error_message)
+                    .setTitle(R.string.route_undo_error_title)
+                            // Button to dismiss the dialog.  Set the listener to null as we only want to dismiss the dialog
+                            // ok is gotten from android resources
+                    .setPositiveButton(android.R.string.ok, null);
+            // We need to create a dialog and show it
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        } else {
+
+            // Create variable for the 2nd last point clicked and assign value form markerPoints array list
+            LatLng lastPoint;
+            lastPoint = markerPoints.get(markerPoints.size() - 2);
+
+            // Animate camera to centre on the previously touched position
+            System.out.println("Centering camera to previous position at " + lastPoint.toString());
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(lastPoint));
+
+            // Remove polyline object from the map
+            for (Polyline line : polylines) {
+                if (polylines.get(polylines.size() - 1).equals(line)) {
+                    line.remove();
+                    polylines.remove(line);
+                }
+            }
+
+            // Remove last value from the markerPoints array list
+            markerPoints.remove(markerPoints.size() - 1);
+
+            // Update the distance text
+            double routeDistance = 0;
+            distanceCount.remove(distanceCount.size() - 1);
+            for (Double step : distanceCount) {
+                routeDistance += step;
+            }
+
+            System.out.println("Total Distance calculated in undo in m = " + routeDistance);
+            // Output new value to ui
+            mDistanceCount.setText(routeDistance / 1000 + "km");
+        }
+    }
+
+    public void completeLoop() {
+        // Check that the minimum number of points have been selected
+        if (!markerCountValidCheck()) {
+            // alert user to add more points
+        } else {
+            // Complete loop by plotting the first point plotted
+            plotPoint(markerPoints.get(0));
+            zoomToArea();
+        }
+    }
 
     private void plotPoint(LatLng point) {
-        // animate camera to centre on touched position
+        // Animate camera to centre on touched position
         mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
 
         // Adding new latlng point to the array list
@@ -211,12 +232,9 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         // Sets the location for the marker to the touched point
         marker.position(point);
 
-        /**
-         * For the start location, the colour of the marker is GREEN and
-         * for the end location, the colour of the marker is RED.
-         */
+        // For the start location, the colour of the marker is GREEN
         if (markerPoints.size() == 1) {
-            // place a green marker for the start position
+            // Place a green marker for the start position
             marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         }
 
@@ -229,9 +247,9 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             marker.position(point1).visible(false);
 
             // Getting URL to the Google Directions API
-            // send these values to the getDirectionsUrl() method and assign returned value to string variable url
+            // Send these values to the getDirectionsUrl() method and assign returned value to string variable url
             String url = getDirectionsUrl(point1, point2);
-            // create a DownloadTask object - see nested class below
+            // Create a DownloadTask object - see nested class below
             DownloadTask downloadTask = new DownloadTask();
             // Start downloading json data from Google Directions API
             downloadTask.execute(url);
@@ -246,18 +264,47 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         }
     }
 
+    private void zoomToArea() {
+
+        mLatitudeMin = minMaxLatLng.get(0).latitude;
+        mLatitudeMax = minMaxLatLng.get(0).latitude;
+        mLongitudeMin = minMaxLatLng.get(0).longitude;
+        mLongitudeMax = minMaxLatLng.get(0).longitude;
+
+        for (LatLng position : minMaxLatLng) {
+            if (mLatitudeMin > position.latitude)
+                mLatitudeMin = position.latitude;
+
+            if (mLatitudeMax < position.latitude)
+                mLatitudeMax = position.latitude;
+
+            if (mLongitudeMin > position.longitude)
+                mLongitudeMin = position.longitude;
+
+            if (mLongitudeMax < position.longitude)
+                mLongitudeMax = position.longitude;
+        }
+
+        LatLng southWest = new LatLng(mLatitudeMin, mLongitudeMin);
+        LatLng northEast = new LatLng(mLatitudeMax, mLongitudeMax);
+        LatLngBounds latLngBounds = new LatLngBounds(southWest, northEast);
+
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 40));
+
+    }
+
     private boolean markerCountValidCheck() {
-        // ensure that there are at least 2 points in the ArrayList
+        // Ensure that there are at least 2 points in the ArrayList
         if (markerPoints.size() <= 1) {
-            // if not, display a message to the user - use a dialog so that some user interaction is required before it disappears
-            // use Builder to build and configure the alert
+            // If not, display a message to the user - use a dialog so that some user interaction is required before it disappears
+            // Use Builder to build and configure the alert
             AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
-            // set the message title and text for the button - use String resources for all of these values
-            // chain the methods together as they are all referencing the builder object
+            // Set the message title and text for the button - use String resources for all of these values
+            // Chain the methods together as they are all referencing the builder object
             builder.setMessage(R.string.route_creation_error_message)
                     .setTitle(R.string.route_creation_error_title)
                     .setPositiveButton(android.R.string.ok, null);
-            // we need to create a dialog and show it
+            // We need to create a dialog and show it
             AlertDialog dialog = builder.create();
             dialog.show();
             return false;
@@ -288,7 +335,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         // transport mode
         String transMode = "&mode=walking";
         // Building the url to the web service
-        // see https://developers.google.com/maps/documentation/directions/#DirectionsRequests
+        // See https://developers.google.com/maps/documentation/directions/#DirectionsRequests
         // eg. https://maps.googleapis.com/maps/api/directions/json?origin=40.722543,-73.998585&destination=40.7577,-73.9857&mode=walking
         // ... would give the points between lower_manhattan and times_square and the directions in between in JSON format
         String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + transMode;
@@ -396,10 +443,13 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
                     double lat = Double.parseDouble(point.get("lat"));
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
+
+                    minMaxLatLng.add(position);
+
                     // Adding all the points in the route to LineOptions
                     lineOptions.add(position).width(6).color(Color.BLUE);
                 }
-                // add Polyline to list and draw on map
+                // Add Polyline to list and draw on map
                 polylines.add(mMap.addPolyline(lineOptions));
             }
         }
@@ -417,17 +467,17 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
             Double distance = null;
             try {
                 jsonObject = new JSONObject(jsonData[0]);
-                // get all routes from the routes array
+                // Get all routes from the routes array
                 JSONArray array = jsonObject.getJSONArray("routes");
-                // get the first route in the JSON object
+                // Get the first route in the JSON object
                 JSONObject routes = array.getJSONObject(0);
-                // get all of the legs from the route and add to legs array
+                // Get all of the legs from the route and add to legs array
                 JSONArray legs = routes.getJSONArray("legs");
-                // get the first leg in the JSON object
+                // Get the first leg in the JSON object
                 JSONObject steps = legs.getJSONObject(0);
-                // get the distance element
+                // Get the distance element
                 JSONObject distanceJSON = steps.getJSONObject("distance");
-                // get the value from the distance element and assign to distance
+                // Get the value from the distance element and assign to distance
                 distance = Double.parseDouble(distanceJSON.getString("value"));
             } catch (JSONException e) {
                 e.printStackTrace();
