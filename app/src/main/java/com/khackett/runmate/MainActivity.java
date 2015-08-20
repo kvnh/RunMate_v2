@@ -227,6 +227,10 @@ public class MainActivity extends AppCompatActivity {
                             Intent intent2 = new Intent(MainActivity.this, MapsActivityDirectionsMultiple.class);
                             startActivity(intent2);
                             break;
+                        case 2: // Choose Map option 3: track run via GPS
+                            Intent intent3 = new Intent(MainActivity.this, MapsActivityTrackRun.class);
+                            startActivity(intent3);
+                            break;
                     }
                 }
             };
@@ -344,7 +348,7 @@ public class MainActivity extends AppCompatActivity {
         tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
             @Override
             public int getIndicatorColor(int position) {
-                return getResources().getColor(R.color.tabsScrollColor);
+                return getResources().getColor(R.color.tabsScrollColorBlue);
             }
         });
 

@@ -53,6 +53,7 @@
     <string-array name="plot_route_choices">
         <item>Manual Plot</item>
         <item>Directions Assisted Plot</item>
+        <item>Track Run via GPS</item>
     </string-array>
 
     <string name="error_external_storage">There was a problem accessing your device\'s external storage</string>
@@ -87,6 +88,17 @@
 
     <string name="distance_count">0 km</string>
     <string name="str_btn_undo">Undo</string>
-    <string name="str_btn_complete_loop">Complete Loop</string>s
+    <string name="str_btn_complete_loop">Complete Loop</string>
+    <string name="title_activity_maps_activity_track_run">Map</string>
+
+
+    <string name="start_updates">Start Run</string>
+    <string name="stop_updates">Stop Run</string>
+    <string name="latitude_label">Lat</string>
+    <string name="longitude_label">Lng</string>
+    <string name="last_update_time_label">Last Update</string>
+
+    <string name="location_updated_message">New location detected</string>
+
 
 </resources>

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest package="com.khackett.runmate"
-          xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest
+    package="com.khackett.runmate"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -17,7 +18,7 @@
  The ACCESS_COARSE/FINE_LOCATION permissions are not required to use
          Google Maps Android API v2, but are recommended.
     -->
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!--<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />-->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
     <application
@@ -104,6 +105,14 @@
         <activity
             android:name=".MapsActivityDisplayRoute"
             android:label="@string/title_activity_maps_activity_display_route">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.khackett.runmate.MainActivity"/>
+        </activity>
+        <activity
+            android:name=".MapsActivityTrackRun"
+            android:label="@string/title_activity_maps_activity_track_run"
+            android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.khackett.runmate.MainActivity"/>

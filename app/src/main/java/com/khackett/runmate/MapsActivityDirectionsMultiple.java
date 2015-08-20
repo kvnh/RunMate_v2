@@ -60,7 +60,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps_activity_directions_multiple);
 
-        // Initializing array lists
+        // Initialising array lists
         markerPoints = new ArrayList<LatLng>();
         distanceCount = new ArrayList<Double>();
         polylines = new ArrayList<Polyline>();
