@@ -26,7 +26,7 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/NoActionBarTheme">
+        android:theme="@style/MaterialTheme">
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version"/>
@@ -36,11 +36,11 @@
 
         <!-- android:theme="@style/AppTheme" -->
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.MainActivity"
             android:label="@string/app_name"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/NoActionBarTheme">
+            android:theme="@style/MaterialTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -52,7 +52,7 @@
             android:label="@string/title_activity_maps_activity_manual_polyline">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.khackett.runmate.MainActivity"/>
+                android:value=".activity.MainActivity"/>
         </activity>
         <activity
             android:name=".LoginActivity"
@@ -68,46 +68,46 @@
         <activity
             android:name=".EditFriendsActivity"
             android:label="@string/title_activity_edit_friends"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/NoActionBarTheme">
+            android:theme="@style/MaterialTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.khackett.runmate.MainActivity"/>
+                android:value=".activity.MainActivity"/>
         </activity>
         <activity
             android:name=".RecipientsActivity"
             android:label="@string/title_activity_recipients"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/ActionBarTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.khackett.runmate.MainActivity"/>
+                android:value=".activity.MainActivity"/>
         </activity>
         <activity
             android:name=".MapsActivityDirectionsMultiple"
             android:label="@string/title_activity_maps_activity_directions_multiple">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.khackett.runmate.MainActivity"/>
+                android:value=".activity.MainActivity"/>
         </activity>
         <activity
             android:name=".RouteRecipientsActivity"
             android:label="@string/title_activity_route_recipients"
-            android:parentActivityName=".MainActivity"
+            android:parentActivityName=".activity.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/Theme.MyAppTheme">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.khackett.runmate.MainActivity"/>
+                android:value=".activity.MainActivity"/>
         </activity>
         <activity
             android:name=".MapsActivityDisplayRoute"
             android:label="@string/title_activity_maps_activity_display_route">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.khackett.runmate.MainActivity"/>
+                android:value=".activity.MainActivity"/>
         </activity>
         <activity
             android:name=".MapsActivityTrackRun"
@@ -115,7 +115,7 @@
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.khackett.runmate.MainActivity"/>
+                android:value=".activity.MainActivity"/>
         </activity>
     </application>
 

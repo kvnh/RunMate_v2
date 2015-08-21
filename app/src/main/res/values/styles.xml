@@ -1,11 +1,15 @@
 <resources>
 
-    <!-- Base application theme. -->
-    <style name="NoActionBarTheme" parent="Theme.AppCompat.Light.NoActionBar">
+
+    <style name="MaterialTheme" parent="MaterialTheme.Base">
+
+    </style>
+
+    <style name="MaterialTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
         <item name="colorPrimary">@color/ColorPrimaryBlue</item>
         <item name="colorPrimaryDark">@color/ColorPrimaryDarkBlue</item>
-        <!-- Customize your theme here. -->
     </style>
 
 
@@ -24,3 +28,32 @@
     </style>
 
 </resources>
+
+
+
+<!--<resources>-->
+
+    <!--&lt;!&ndash; Base application theme. &ndash;&gt;-->
+    <!--<style name="NoActionBarTheme" parent="Theme.AppCompat.Light.NoActionBar">-->
+        <!--<item name="windowActionBar">false</item>-->
+        <!--<item name="colorPrimary">@color/ColorPrimaryBlue</item>-->
+        <!--<item name="colorPrimaryDark">@color/ColorPrimaryDarkBlue</item>-->
+        <!--&lt;!&ndash; Customize your theme here. &ndash;&gt;-->
+    <!--</style>-->
+
+
+    <!--<style name="ActionBarTheme" parent="android:style/Theme.Holo.Light.DarkActionBar">-->
+        <!--<item name="android:background">@color/ColorPrimaryBlue</item>-->
+        <!--&lt;!&ndash; Customize your theme here. &ndash;&gt;-->
+    <!--</style>-->
+
+
+    <!--<style name="Theme.MyAppTheme" parent="@android:style/Theme.Holo">-->
+        <!--<item name="android:actionBarStyle">@style/Theme.MyAppTheme.ActionBar</item>-->
+    <!--</style>-->
+
+    <!--<style name="Theme.MyAppTheme.ActionBar" parent="@android:style/Widget.Holo.ActionBar">-->
+        <!--<item name="android:background">@color/ColorPrimaryBlue</item>-->
+    <!--</style>-->
+
+<!--</resources>-->

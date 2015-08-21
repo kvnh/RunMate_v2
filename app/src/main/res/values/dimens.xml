@@ -11,5 +11,6 @@
     <dimen name="small_margin_left">2dp</dimen>
     <dimen name="ui_group_top_margin">2dp</dimen>
 
+    <dimen name="nav_drawer_width">260dp</dimen>
 
 </resources>

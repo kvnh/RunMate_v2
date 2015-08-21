@@ -54,7 +54,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
     ArrayList<Double> distanceCount;
     List<Polyline> polylines;
 
-    // Member variable for the send route button and distance counter display
+    // Member variable for the UI buttons
     protected Button mButtonSend;
     protected Button mButtonUndo;
     protected Button mButtonCompleteLoop;

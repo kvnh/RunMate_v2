@@ -1,4 +1,4 @@
-package com.khackett.runmate;
+package com.khackett.runmate.activity;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -7,13 +7,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
@@ -21,6 +21,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.khackett.runmate.EditFriendsActivity;
+import com.khackett.runmate.LoginActivity;
+import com.khackett.runmate.MapsActivityDirectionsMultiple;
+import com.khackett.runmate.MapsActivityManualPolyline;
+import com.khackett.runmate.MapsActivityTrackRun;
+import com.khackett.runmate.R;
+import com.khackett.runmate.RecipientsActivity;
+import com.khackett.runmate.SlidingTabLayout;
 import com.khackett.runmate.adapters.SectionsPagerAdapter;
 import com.khackett.runmate.utils.ParseConstants;
 import com.parse.ParseUser;
@@ -33,35 +41,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-public class MainActivity extends AppCompatActivity {
-
-
-    //First We Declare Titles And Icons For Our Navigation Drawer List View
-    //This Icons And Titles Are holded in an Array as you can see
-    String TITLES[] = {"My Profile", "My Runs", "Upcoming Runs", "Settings"};
-    int ICONS[] = {R.mipmap.ic_action_add_friend, R.mipmap.ic_directions_run_white_24dp, R.mipmap.ic_directions_run_white_24dp, R.drawable.ic_setting_light};
-
-    //Similarly we Create a String Resource for the name and email in the header view
-    //And we also create a int resource for profile picture in the header view
-    String NAME = "Kevin Hackett";
-    String EMAIL = "kevin@kevin.com";
-    int PROFILE = R.drawable.ic_media_play;
-
+public class MainActivity extends AppCompatActivity implements NavigationDrawerFragment.FragmentDrawerListener {
 
     // Declaring the Toolbar Object
     private Toolbar toolbar;
-
-    // Declaring RecyclerView
-    RecyclerView mRecyclerView;
-    // Declaring Adapter For Recycler View
-    RecyclerView.Adapter mAdapter;
-    // Declaring Layout Manager as a linear layout manager
-    RecyclerView.LayoutManager mLayoutManager;
-    // Declaring DrawerLayout
-    DrawerLayout Drawer;
-
-    ActionBarDrawerToggle mDrawerToggle;
-
+    private NavigationDrawerFragment navDrawerFragment;
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
@@ -257,61 +241,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // add the requestWindowFeature() to set up the progress bar
-        // requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
         setContentView(R.layout.activity_main);
 
         // Attaching the toolbar layout to the toolbar object
-        toolbar = (Toolbar) findViewById(R.id.tool_bar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         // Setting toolbar as the ActionBar with setSupportActionBar() call
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        // Assigning the RecyclerView Object to the xml View
-        mRecyclerView = (RecyclerView) findViewById(R.id.RecyclerView);
+        navDrawerFragment = (NavigationDrawerFragment) getSupportFragmentManager().findFragmentById(R.id.navigation_drawer_fragment);
+        navDrawerFragment.setUp(R.id.navigation_drawer_fragment, (DrawerLayout) findViewById(R.id.drawerLayout), toolbar);
+        navDrawerFragment.setDrawerListener(this);
 
-        // Letting the system know that the list objects are of fixed size
-        mRecyclerView.setHasFixedSize(true);
-
-        // Creating the Adapter of AdapterNavigation class(which we are going to see in a bit)
-        mAdapter = new AdapterNavigation(TITLES, ICONS, NAME, EMAIL, PROFILE);
-        // And passing the titles,icons,header view name, header view email,
-        // and header view profile picture
-
-        // Setting the adapter to RecyclerView
-        mRecyclerView.setAdapter(mAdapter);
-
-        // Creating a layout Manager
-        mLayoutManager = new LinearLayoutManager(this);
-
-        // Setting the layout Manager
-        mRecyclerView.setLayoutManager(mLayoutManager);
-
-        // Drawer object Assigned to the view
-        Drawer = (DrawerLayout) findViewById(R.id.DrawerLayout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, Drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                // code here will execute once the drawer is opened( As I dont want anything happened whe drawer is
-                // open I am not going to put anything here)
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-                super.onDrawerClosed(drawerView);
-                // Code here will execute once drawer is closed
-            }
-
-        };
-
-        // Drawer Toggle Object Made
-        // Drawer Listener set to the Drawer toggle
-        Drawer.setDrawerListener(mDrawerToggle);
-        // Finally we set the drawer toggle sync State
-        mDrawerToggle.syncState();
-
+        // display the first navigation drawer view on app launch
+        // displayView(0);
 
         // check to see if anyone is logged in before we start this intent
         // if getCurrentUser() class method returns a parse user
@@ -484,15 +427,15 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, EditFriendsActivity.class);
                 startActivity(intent);
                 break;
-            case R.id.action_camera:
-                // add code for an alert dialog
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                // get the list the strings file
-                // code for listener will be long, so create a member variable for it and pass that in instead
-                builder.setItems(R.array.camera_choices, mDialogListenerCamera);
-                AlertDialog dialogCamera = builder.create();
-                dialogCamera.show();
-                break;
+//            case R.id.action_camera:
+//                // add code for an alert dialog
+//                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//                // get the list the strings file
+//                // code for listener will be long, so create a member variable for it and pass that in instead
+//                builder.setItems(R.array.camera_choices, mDialogListenerCamera);
+//                AlertDialog dialogCamera = builder.create();
+//                dialogCamera.show();
+//                break;
             case R.id.action_plot_route:
                 // add code for an alert dialog
                 AlertDialog.Builder builderPlot = new AlertDialog.Builder(this);
@@ -506,4 +449,43 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onDrawerItemSelected(View view, int position) {
+        displayView(position);
+    }
+
+    private void displayView(int position) {
+        Fragment fragment = null;
+        String title = getString(R.string.app_name);
+        switch (position) {
+            case 0:
+//                fragment = new SettingsFragment();
+//                title = getString(R.string.title_settings);
+                break;
+            case 1:
+//                fragment = new FriendsFragment();
+//                title = getString(R.string.title_friends);
+                break;
+            case 2:
+//                fragment = new MessagesFragment();
+//                title = getString(R.string.title_messages);
+                break;
+            case 3:
+//                fragment = new SettingsFragment();
+//                title = getString(R.string.title_settings);
+                break;
+            default:
+                break;
+        }
+
+//        if (fragment != null) {
+//            FragmentManager fragmentManager = getSupportFragmentManager();
+//            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//            fragmentTransaction.replace(R.id.pager, fragment);
+//            fragmentTransaction.commit();
+//
+//            // set the toolbar title
+//            getSupportActionBar().setTitle(title);
+//        }
+    }
 }

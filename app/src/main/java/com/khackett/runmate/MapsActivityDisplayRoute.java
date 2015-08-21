@@ -6,15 +6,24 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
+import android.view.View;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
+import android.widget.Button;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.khackett.runmate.utils.DirectionsJSONParser;
 import com.parse.ParseGeoPoint;
@@ -33,12 +42,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MapsActivityDisplayRoute extends FragmentActivity {
+public class MapsActivityDisplayRoute extends FragmentActivity implements View.OnClickListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
     double mLatitude = 0;
     double mLongitude = 0;
+
+    // Member variable for the UI buttons
+    protected Button mButtonAnimate;
 
     // member variable to represent an array of LatLng values, used to retrieve the sent route via the Directions API
     protected ArrayList<LatLng> markerPoints;
@@ -139,6 +151,55 @@ public class MapsActivityDisplayRoute extends FragmentActivity {
 
         }
 
+        // Set up member variables for each UI component
+        mButtonAnimate = (Button) findViewById(R.id.btn_animate);
+
+        // Register buttons with the listener
+        mButtonAnimate.setOnClickListener(this);
+
+    }
+
+    /**
+     * Called when a view has been clicked.
+     *
+     * @param v The view that was clicked.
+     */
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.btn_animate:
+                animateRoute();
+                break;
+//            case R.id.btn_accept:
+//                // do something
+//                break;
+            default:
+                System.out.println("Problem with input");
+        }
+    }
+
+    public void animateRoute() {
+
+        LatLng SYDNEY = new LatLng(-33.88, 151.21);
+        LatLng MOUNTAIN_VIEW = new LatLng(-34.4, 152.1);
+
+        // Move the camera instantly to Sydney with a zoom of 15.
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(SYDNEY, 15));
+
+        // Zoom in, animating the camera.
+        // mMap.animateCamera(CameraUpdateFactory.zoomIn());
+
+        // Zoom out to zoom level 10, animating with a duration of 2 seconds.
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(10), 30000, null);
+
+        // Construct a CameraPosition focusing on Mountain View and animate the camera to that position.
+        CameraPosition cameraPosition = new CameraPosition.Builder()
+                .target(MOUNTAIN_VIEW)      // Sets the center of the map to Mountain View
+                .zoom(17)                   // Sets the zoom
+                .bearing(90)                // Sets the orientation of the camera to east
+                .tilt(30)                   // Sets the tilt of the camera to 30 degrees
+                .build();                   // Creates a CameraPosition from the builder
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition), 30000, null);
     }
 
 

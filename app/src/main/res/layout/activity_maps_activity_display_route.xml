@@ -4,13 +4,38 @@
                 android:layout_height="match_parent"
                 tools:context="com.khackett.runmate.MapsActivityDisplayRoute">
 
-    <Button
-        android:id="@+id/btn_accept"
-        android:layout_width="fill_parent"
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="@string/str_btn_accept"/>
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_accept"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="2dp"
+            android:layout_weight="1"
+            android:background="#40ffffff"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/str_btn_accept"
+            android:textColor="#0A0AFF"/>
+
+        <Button
+            android:id="@+id/btn_animate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#40ffffff"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/str_btn_animate"
+            android:textColor="#0A0AFF"/>
+
+    </LinearLayout>
 
     <fragment
         android:id="@+id/map"
@@ -19,7 +44,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@id/btn_accept"
+        android:layout_above="@id/linearLayout"
         tools:context="com.khackett.runmate.MapsActivityDisplayRoute"/>
 
 </RelativeLayout>
