@@ -81,7 +81,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
      * Boolean to to track whether the location updates have been turned on or off by the user.
      * Value changes when the user presses the Start Run and Stop Run buttons.
      */
-    protected Boolean mRequestingLocationUpdates;
+    protected Boolean mCheckLocationUpdates;
 
     /**
      * Time when the location was updated represented as a String.
@@ -113,7 +113,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         mLastUpdateTimeTextView = (TextView) findViewById(R.id.last_update_time_text);
 
         // set the location update request to false to start the activity
-        mRequestingLocationUpdates = false;
+        mCheckLocationUpdates = false;
         mLastUpdateTime = "";
 
         // Initializing array lists
@@ -125,8 +125,8 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         // set the zoom controls to visible
         mMap.getUiSettings().setZoomControlsEnabled(true);
 
-        // Update values using data stored in the Bundle.
-        updateValuesFromBundle(savedInstanceState);
+        // Update previous settings using data stored in the Bundle object
+        updateSettingsFromBundle(savedInstanceState);
 
         // create the Google API client and request the location services API
         createGoogleApiClient();
@@ -151,7 +151,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         // setUpMapIfNeeded();
 
         // Resume receiving location updates if requested
-        if (mGoogleApiClient.isConnected() && !mRequestingLocationUpdates) {
+        if (mGoogleApiClient.isConnected() && !mCheckLocationUpdates) {
             startLocationUpdates();
         }
     }
@@ -177,22 +177,20 @@ public class MapsActivityTrackRun extends FragmentActivity implements
      *
      * @param savedInstanceState The activity state saved in the Bundle.
      */
-    private void updateValuesFromBundle(Bundle savedInstanceState) {
+    private void updateSettingsFromBundle(Bundle savedInstanceState) {
         Log.i(TAG, "Updating values from bundle");
         if (savedInstanceState != null) {
             // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
             if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
-                mRequestingLocationUpdates = savedInstanceState.getBoolean(REQUESTING_LOCATION_UPDATES_KEY);
+                mCheckLocationUpdates = savedInstanceState.getBoolean(REQUESTING_LOCATION_UPDATES_KEY);
                 setButtonsEnabledState();
             }
-
             // Update the value of mCurrentLocation from the Bundle and update the UI to show the correct latitude and longitude.
             if (savedInstanceState.keySet().contains(LOCATION_KEY)) {
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation is not null.
                 mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
             }
-
             // Update the value of mLastUpdateTime from the Bundle and update the UI.
             if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
                 mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
@@ -205,7 +203,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
      * Stores activity data in the Bundle.
      */
     public void onSaveInstanceState(Bundle savedInstanceState) {
-        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mRequestingLocationUpdates);
+        savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mCheckLocationUpdates);
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
@@ -247,11 +245,10 @@ public class MapsActivityTrackRun extends FragmentActivity implements
 
     /**
      * Handles the Start Run button and requests start of location updates.
-     * Does nothing if updates have already been requested.
      */
-    public void startUpdatesButtonHandler(View view) {
-        if (!mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = true;
+    public void startUpdatesButton(View view) {
+        if (!mCheckLocationUpdates) {
+            mCheckLocationUpdates = true;
             setButtonsEnabledState();
             startLocationUpdates();
         }
@@ -259,13 +256,27 @@ public class MapsActivityTrackRun extends FragmentActivity implements
 
     /**
      * Handles the Stop Run button, and requests removal of location updates.
-     * Does nothing if updates were not previously requested.
      */
-    public void stopUpdatesButtonHandler(View view) {
-        if (mRequestingLocationUpdates) {
-            mRequestingLocationUpdates = false;
+    public void stopUpdatesButton(View view) {
+        if (mCheckLocationUpdates) {
+            mCheckLocationUpdates = false;
             setButtonsEnabledState();
             stopLocationUpdates();
+        }
+    }
+
+    /**
+     * Ensures  only one button is enabled at a time.
+     * Stop Run button is enabled if the user is requesting location updates.
+     * Start Run button is enabled if the user is not requesting location updates.
+     */
+    private void setButtonsEnabledState() {
+        if (mCheckLocationUpdates) {
+            mStartUpdatesButton.setEnabled(false);
+            mStopUpdatesButton.setEnabled(true);
+        } else {
+            mStartUpdatesButton.setEnabled(true);
+            mStopUpdatesButton.setEnabled(false);
         }
     }
 
@@ -282,16 +293,29 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         if (mCurrentLocation == null) {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
+            zoomToCurrentLocation(mCurrentLocation);
             updateUI();
         }
 
         // If Start Run button is pressed before GoogleApiClient connects,
         // mRequestingLocationUpdates is set to true in startUpdatesButtonHandler()
         // Then start location updates.
-        if (mRequestingLocationUpdates) {
+        if (mCheckLocationUpdates) {
             startLocationUpdates();
         }
 
+    }
+
+    public void zoomToCurrentLocation(Location location) {
+        Log.d(TAG, location.toString());
+        double currentLatitude = location.getLatitude();
+        double currentLongitude = location.getLongitude();
+        LatLng latLng = new LatLng(currentLatitude, currentLongitude);
+        MarkerOptions options = new MarkerOptions()
+                .position(latLng);
+        mMap.addMarker(options);
+        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 16);
+        mMap.animateCamera(cameraUpdate);
     }
 
     /**
@@ -308,25 +332,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     protected void stopLocationUpdates() {
         // Calls this LocationListener when location has changed
         LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
-    }
-
-
-    //    @Override
-//    public void onLocationChanged(Location location) {
-//        handleNewLocation(location);
-//    }
-
-    private void handleNewLocation(Location location) {
-        Log.d(TAG, location.toString());
-        double currentLatitude = location.getLatitude();
-        double currentLongitude = location.getLongitude();
-        LatLng latLng = new LatLng(currentLatitude, currentLongitude);
-        MarkerOptions options = new MarkerOptions()
-                .position(latLng)
-                .title("Here's me :)");
-        mMap.addMarker(options);
-        CameraUpdate cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, 16);
-        mMap.animateCamera(cameraUpdate);
     }
 
     /**
@@ -367,7 +372,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         Toast.makeText(this, getResources().getString(R.string.location_updated_message), Toast.LENGTH_SHORT).show();
 
 //        mCurrentLocation = location;
-//
 //        mLat = mCurrentLocation.getLatitude();
 //        mLng = mCurrentLocation.getLongitude();
 //        // LatLng newLatLngPoint = new LatLng((int) (mLat * 1e6), (int) (mLng * 1e6));
@@ -379,14 +383,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
 //        for (LatLng point : latLngPointsArray) {
 //            System.out.println(point);
 //        }
-//
-////        PolylineOptions lineOptions = new PolylineOptions();
-////        lineOptions.add(newLatLngPoint).width(6).color(Color.BLUE);
-////        // add Polyline to list and draw on map
-////        polylines.add(mMap.addPolyline(lineOptions));
-
     }
-
 
     //    public void onLocationChanged(Location location) {
 //        String msg = "Location:" + location.getLatitude() + "," + location.getLongitude();
@@ -406,7 +403,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
 //        options.color(Color.RED);
 //        mMap.addPolyline(options);
 //
-//
 //        googleMap.addPolyline(new PolylineOptions()
 //                .add(new LatLng(Double.parseDouble(YOUR PREVIOUS LATITUDE VALUE),
 //                        Double.parseDouble(YOUR PREVIOUS LONGITUDE VALUE),
@@ -417,7 +413,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
 //                                        .geodesic(true));
 //    }
 
-
     /**
      * Updates the latitude, longitude, and last location time in the UI.
      */
@@ -426,21 +421,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
             mLatitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
             mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
             mLastUpdateTimeTextView.setText(mLastUpdateTime);
-        }
-    }
-
-    /**
-     * Ensures  only one button is enabled at a time.
-     * Stop Run button is enabled if the user is requesting location updates.
-     * Start Run button is enabled if the user is not requesting location updates.
-     */
-    private void setButtonsEnabledState() {
-        if (mRequestingLocationUpdates) {
-            mStartUpdatesButton.setEnabled(false);
-            mStopUpdatesButton.setEnabled(true);
-        } else {
-            mStartUpdatesButton.setEnabled(true);
-            mStopUpdatesButton.setEnabled(false);
         }
     }
 
