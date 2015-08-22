@@ -98,7 +98,6 @@
     <string name="latitude_label">Lat</string>
     <string name="longitude_label">Lng</string>
     <string name="last_update_time_label">Last Update</string>
-
     <string name="location_updated_message">New location detected</string>
 
     <string name="nav_item_home">Home</string>

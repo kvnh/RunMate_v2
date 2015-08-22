@@ -1,5 +1,7 @@
 package com.khackett.runmate;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.graphics.Color;
 import android.location.Location;
@@ -12,10 +14,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -32,7 +41,9 @@ import java.util.List;
 
 public class MapsActivityTrackRun extends FragmentActivity implements
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        LocationListener,
+        ResultCallback<LocationSettingsResult> {
 
     /**
      * Request code to send to Google Play Services in case of connection failure
@@ -40,19 +51,29 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     /**
-     * The desired interval for location updates.
+     * Request code to send to Google Play Services when services not installed
      */
-    public static final long MIN_UPDATE_INTERVAL_MILLISECONDS = 1000 * 5;
+    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
     /**
-     * The fastest rate for location updates - updates will never be more frequent than this value.
+     * Constant used in the location settings dialog.
      */
-    public static final long FASTEST_UPDATE_INTERVAL_MILLISECONDS = 1000 * 1;
+    protected static final int REQUEST_CHECK_SETTINGS = 0x1;
 
     /**
-     * The minimum distance from previous update to accept new update (in meters).
+     * The desired interval for location updates in milliseconds
      */
-    private static int DISPLACEMENT_METRES = 1;
+    public static final long UPDATE_INTERVAL = 1000 * 5;
+
+    /**
+     * The fastest rate for location updates in milliseconds - updates will never be more frequent than this value.
+     */
+    public static final long FASTEST_UPDATE_INTERVAL = 1000 * 1;
+
+    /**
+     * The minimum distance from previous update to accept new update in meters.
+     */
+    private static int DISPLACEMENT = 1;
 
     // Keys for storing activity state in the Bundle.
     protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
@@ -60,12 +81,28 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    // Provides the entry point to Google Play services.
+
+    /**
+     * Provides the entry point to Google Play services.
+     */
     private GoogleApiClient mGoogleApiClient;
-    // Used to request a quality of service for location updates and store parameters for requests to the FusedLocationProviderApi
+
+    /**
+     * Used to request a quality of service for location updates and store parameters for requests to the FusedLocationProviderApi.
+     */
     private LocationRequest mLocationRequest;
-    // The current location of the device
+
+    /**
+     * The current location of the device
+     */
     private Location mCurrentLocation;
+
+    /**
+     * Stores the types of location services the client is requesting.
+     * Used to check settings and determine if the device has the required location settings.
+     */
+    protected LocationSettingsRequest mLocationSettingsRequest;
+
 
     // TAg for current Activity
     public static final String TAG = MapsActivityTrackRun.class.getSimpleName();
@@ -128,20 +165,14 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         // Update previous settings using data stored in the Bundle object
         updateSettingsFromBundle(savedInstanceState);
 
-        // create the Google API client and request the location services API
-        createGoogleApiClient();
+        // Check availability of Google Play services
+        if (checkGooglePlayServices()) {
+            // create the Google API client and the location request and request the location services API
+            createGoogleApiClient();
+            createLocationRequest();
+            buildLocationSettingsRequest();
+        }
 
-
-//        provider = LocationManager.GPS_PROVIDER;
-//        // Acquire a reference to the system Location Manager to return a new LocationManager instance
-//        mLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-//
-//        // Register the listener with the Location Manager to receive location updates
-//        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, mLocationListener);
-//        // Getting reference to SupportMapFragment of the activity_maps
-//        SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-//        // Getting Map for the SupportMapFragment
-//        mMap = fm.getMap();
     }
 
     @Override
@@ -180,7 +211,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     private void updateSettingsFromBundle(Bundle savedInstanceState) {
         Log.i(TAG, "Updating values from bundle");
         if (savedInstanceState != null) {
-            // Update the value of mRequestingLocationUpdates from the Bundle, and make sure that
+            // Update the value of mCheckLocationUpdates from the Bundle, and make sure that
             // the Start Updates and Stop Updates buttons are correctly enabled or disabled.
             if (savedInstanceState.keySet().contains(REQUESTING_LOCATION_UPDATES_KEY)) {
                 mCheckLocationUpdates = savedInstanceState.getBoolean(REQUESTING_LOCATION_UPDATES_KEY);
@@ -191,22 +222,48 @@ public class MapsActivityTrackRun extends FragmentActivity implements
                 // Since LOCATION_KEY was found in the Bundle, we can be sure that mCurrentLocation is not null.
                 mCurrentLocation = savedInstanceState.getParcelable(LOCATION_KEY);
             }
-            // Update the value of mLastUpdateTime from the Bundle and update the UI.
+            // Update the value of mLastUpdateTime from the Bundle.
             if (savedInstanceState.keySet().contains(LAST_UPDATED_TIME_STRING_KEY)) {
                 mLastUpdateTime = savedInstanceState.getString(LAST_UPDATED_TIME_STRING_KEY);
             }
+            // Update the UI.
             updateUI();
         }
     }
 
     /**
-     * Stores activity data in the Bundle.
+     * Method to store activity data in a Bundle
      */
     public void onSaveInstanceState(Bundle savedInstanceState) {
         savedInstanceState.putBoolean(REQUESTING_LOCATION_UPDATES_KEY, mCheckLocationUpdates);
         savedInstanceState.putParcelable(LOCATION_KEY, mCurrentLocation);
         savedInstanceState.putString(LAST_UPDATED_TIME_STRING_KEY, mLastUpdateTime);
         super.onSaveInstanceState(savedInstanceState);
+    }
+
+    /**
+     * Method to verify that Google Play Services is available on the device
+     */
+    private boolean checkGooglePlayServices() {
+        // create instance of GoogleApiAvailability
+        GoogleApiAvailability googleAPI = GoogleApiAvailability.getInstance();
+        // obtain a status code indicating whether there was an error
+        int result = googleAPI.isGooglePlayServicesAvailable(this);
+        if (result != ConnectionResult.SUCCESS) {
+            // if error can be resolved via user action
+            if (googleAPI.isUserResolvableError(result)) {
+                // return dialog to user, and direct them to Play Store if Google Play services is out of date or missing
+                googleAPI.getErrorDialog(this, result, PLAY_SERVICES_RESOLUTION_REQUEST).show();
+            } else {
+                // otherwise, display a message informing user that Google Play services is out of date
+                Toast.makeText(getApplicationContext(),
+                        "Device is not supported - please install Google Play services", Toast.LENGTH_LONG)
+                        .show();
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -222,9 +279,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
                 .addApi(LocationServices.API)
                         // build the client
                 .build();
-
-        // create the location request
-        createLocationRequest();
     }
 
     /**
@@ -236,11 +290,80 @@ public class MapsActivityTrackRun extends FragmentActivity implements
                 // request the most precise location possible
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                         // set update interval for active location updates
-                .setInterval(MIN_UPDATE_INTERVAL_MILLISECONDS)
+                .setInterval(UPDATE_INTERVAL)
                         // set fastest rate for active location updates
                         // app will never receive updates faster than this setting
-                .setFastestInterval(FASTEST_UPDATE_INTERVAL_MILLISECONDS)
-                .setSmallestDisplacement(DISPLACEMENT_METRES);
+                .setFastestInterval(FASTEST_UPDATE_INTERVAL)
+                .setSmallestDisplacement(DISPLACEMENT);
+    }
+
+    /**
+     * Uses a LocationSettingsRequest Builder to build and object used to check
+     * if a device has the required location settings.
+     */
+    protected void buildLocationSettingsRequest() {
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        // ensure that dialog will always be displayed
+        builder.setAlwaysShow(true);
+        mLocationSettingsRequest = builder.build();
+    }
+
+    /**
+     * Method to check if the location settings for the app are adequate.
+     * When the PendingResult returns, the client can check the location settings by looking
+     * at the status code from the LocationSettingsResult object.
+     */
+    protected void checkLocationSettings() {
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, mLocationSettingsRequest);
+        result.setResultCallback(this);
+    }
+
+    /**
+     * The callback invoked when checkLocationSettings() is called.
+     * Checks the LocationSettingsResult object to determine if location settings are adequate
+     * If they are not, begins the process of presenting a location settings dialog to the user.
+     */
+    @Override
+    public void onResult(LocationSettingsResult locationSettingsResult) {
+        final Status status = locationSettingsResult.getStatus();
+        switch (status.getStatusCode()) {
+            case LocationSettingsStatusCodes.SUCCESS:
+                Log.i(TAG, "All location settings satisfied.");
+                startLocationUpdates();
+                break;
+            case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                Log.i(TAG, "Location settings are not satisfied. Show dialog to upgrade location settings ");
+                try {
+                    // Show the dialog by calling startResolutionForResult(), and check the result in onActivityResult().
+                    status.startResolutionForResult(MapsActivityTrackRun.this, REQUEST_CHECK_SETTINGS);
+                } catch (IntentSender.SendIntentException e) {
+                    Log.i(TAG, "PendingIntent unable to execute request.");
+                }
+                break;
+            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                Log.i(TAG, "Location settings are inadequate and cannot be fixed here.");
+                break;
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            // Check for the integer request code originally supplied to startResolutionForResult() in onResult() above
+            case REQUEST_CHECK_SETTINGS:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        Log.i(TAG, "User agreed to make required location settings changes.");
+                        startLocationUpdates();
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        Log.i(TAG, "User chose not to make required location settings changes.");
+                        break;
+                }
+                break;
+        }
     }
 
     /**
@@ -250,6 +373,8 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         if (!mCheckLocationUpdates) {
             mCheckLocationUpdates = true;
             setButtonsEnabledState();
+            // check location settings to ensure GPS is enabled
+            checkLocationSettings();
             startLocationUpdates();
         }
     }
@@ -293,7 +418,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         if (mCurrentLocation == null) {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            zoomToCurrentLocation(mCurrentLocation);
+            // zoomToCurrentLocation(mCurrentLocation);
             updateUI();
         }
 
@@ -428,6 +553,8 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
+        // check location settings to ensure GPS is enabled
+        checkLocationSettings();
     }
 
     @Override
@@ -489,6 +616,4 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     private void setUpMap() {
         // mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
-
-
 }
