@@ -46,19 +46,19 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         ResultCallback<LocationSettingsResult> {
 
     /**
-     * Request code to send to Google Play Services in case of connection failure
+     * Request code to send to Google Play Services in case of connection failure.
      */
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    public static final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     /**
-     * Request code to send to Google Play Services when services not installed
+     * Request code to send to Google Play Services when services not installed.
      */
-    private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
+    public static final int PLAY_SERVICES_RESOLUTION_REQUEST = 1000;
 
     /**
      * Constant used in the location settings dialog.
      */
-    protected static final int REQUEST_CHECK_SETTINGS = 0x1;
+    public static final int REQUEST_CHECK_SETTINGS = 1;
 
     /**
      * The desired interval for location updates in milliseconds
@@ -73,12 +73,12 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     /**
      * The minimum distance from previous update to accept new update in meters.
      */
-    private static int DISPLACEMENT = 1;
+    public static final int DISPLACEMENT = 1;
 
     // Keys for storing activity state in the Bundle.
-    protected final static String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
-    protected final static String LOCATION_KEY = "location-key";
-    protected final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+    private static final String REQUESTING_LOCATION_UPDATES_KEY = "requesting-location-updates-key";
+    private static final String LOCATION_KEY = "location-key";
+    private static final String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -102,7 +102,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
      * Used to check settings and determine if the device has the required location settings.
      */
     protected LocationSettingsRequest mLocationSettingsRequest;
-
 
     // TAg for current Activity
     public static final String TAG = MapsActivityTrackRun.class.getSimpleName();
@@ -133,8 +132,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     private Polyline line;
 
     private List<Polyline> polylines;
-
-//    private String provider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -176,13 +173,18 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        // Connect to the Google API client
+        mGoogleApiClient.connect();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
-
-        // setUpMapIfNeeded();
-
+        setUpMapIfNeeded();
         // Resume receiving location updates if requested
-        if (mGoogleApiClient.isConnected() && !mCheckLocationUpdates) {
+        if (mGoogleApiClient.isConnected() && mCheckLocationUpdates) {
             startLocationUpdates();
         }
     }
@@ -205,8 +207,6 @@ public class MapsActivityTrackRun extends FragmentActivity implements
 
     /**
      * Updates fields based on data stored in the bundle.
-     *
-     * @param savedInstanceState The activity state saved in the Bundle.
      */
     private void updateSettingsFromBundle(Bundle savedInstanceState) {
         Log.i(TAG, "Updating values from bundle");
@@ -293,13 +293,13 @@ public class MapsActivityTrackRun extends FragmentActivity implements
                 .setInterval(UPDATE_INTERVAL)
                         // set fastest rate for active location updates
                         // app will never receive updates faster than this setting
-                .setFastestInterval(FASTEST_UPDATE_INTERVAL)
-                .setSmallestDisplacement(DISPLACEMENT);
+                .setFastestInterval(FASTEST_UPDATE_INTERVAL);
+                // .setSmallestDisplacement(DISPLACEMENT);
     }
 
     /**
-     * Uses a LocationSettingsRequest Builder to build and object used to check
-     * if a device has the required location settings.
+     * Uses a LocationSettingsRequest Builder to build an object used to check
+     * if users device has the required location settings.
      */
     protected void buildLocationSettingsRequest() {
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
@@ -323,18 +323,18 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     /**
      * The callback invoked when checkLocationSettings() is called.
      * Checks the LocationSettingsResult object to determine if location settings are adequate
-     * If they are not, begins the process of presenting a location settings dialog to the user.
      */
     @Override
     public void onResult(LocationSettingsResult locationSettingsResult) {
         final Status status = locationSettingsResult.getStatus();
         switch (status.getStatusCode()) {
             case LocationSettingsStatusCodes.SUCCESS:
-                Log.i(TAG, "All location settings satisfied.");
+                Log.i(TAG, "All appropriate location settings enabled");
+                // Location settings adequate - start checking for location updates
                 startLocationUpdates();
                 break;
             case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
-                Log.i(TAG, "Location settings are not satisfied. Show dialog to upgrade location settings ");
+                Log.i(TAG, "GPS not enabled - show dialog to enable GPS");
                 try {
                     // Show the dialog by calling startResolutionForResult(), and check the result in onActivityResult().
                     status.startResolutionForResult(MapsActivityTrackRun.this, REQUEST_CHECK_SETTINGS);
@@ -342,9 +342,11 @@ public class MapsActivityTrackRun extends FragmentActivity implements
                     Log.i(TAG, "PendingIntent unable to execute request.");
                 }
                 break;
-            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
-                Log.i(TAG, "Location settings are inadequate and cannot be fixed here.");
-                break;
+//            case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+//                Log.i(TAG, "Location settings are inadequate and cannot be fixed here.");
+//                break;
+            default:
+                Log.i(TAG, "Status not recognised - check LocationSettingsResult");
         }
     }
 
@@ -355,11 +357,11 @@ public class MapsActivityTrackRun extends FragmentActivity implements
             case REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
-                        Log.i(TAG, "User agreed to make required location settings changes.");
+                        Log.i(TAG, "User made required changes location settings.");
                         startLocationUpdates();
                         break;
                     case Activity.RESULT_CANCELED:
-                        Log.i(TAG, "User chose not to make required location settings changes.");
+                        Log.i(TAG, "User did not change required location settings.");
                         break;
                 }
                 break;
@@ -367,27 +369,19 @@ public class MapsActivityTrackRun extends FragmentActivity implements
     }
 
     /**
-     * Handles the Start Run button and requests start of location updates.
+     * Handles the Start Run button and checks for location settings before proceeding.
      */
     public void startUpdatesButton(View view) {
-        if (!mCheckLocationUpdates) {
-            mCheckLocationUpdates = true;
-            setButtonsEnabledState();
-            // check location settings to ensure GPS is enabled
-            checkLocationSettings();
-            startLocationUpdates();
-        }
+        // check location settings to ensure GPS is enabled, before running location updates
+        checkLocationSettings();
     }
 
     /**
      * Handles the Stop Run button, and requests removal of location updates.
      */
     public void stopUpdatesButton(View view) {
-        if (mCheckLocationUpdates) {
-            mCheckLocationUpdates = false;
-            setButtonsEnabledState();
-            stopLocationUpdates();
-        }
+        // stop checking for location updates
+        stopLocationUpdates();
     }
 
     /**
@@ -447,16 +441,32 @@ public class MapsActivityTrackRun extends FragmentActivity implements
      * Requests location updates from the FusedLocationApi
      */
     protected void startLocationUpdates() {
-        // Calls this LocationListener when location has changed
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        // Calls the onLocationChanged() listener when location has changed
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        // mCheckLocationUpdates set to true and state of buttons are reset
+                        mCheckLocationUpdates = true;
+                        setButtonsEnabledState();
+                    }
+                });
     }
 
     /**
      * Removes location updates from the FusedLocationApi when activity is paused or stopped
      */
     protected void stopLocationUpdates() {
-        // Calls this LocationListener when location has changed
-        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+        // Removes this listener when the prompted
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this)
+                .setResultCallback(new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        // mCheckLocationUpdates set to false and state of buttons are reset
+                        mCheckLocationUpdates = false;
+                        setButtonsEnabledState();
+                    }
+                });
     }
 
     /**
@@ -542,19 +552,12 @@ public class MapsActivityTrackRun extends FragmentActivity implements
      * Updates the latitude, longitude, and last location time in the UI.
      */
     private void updateUI() {
+        setButtonsEnabledState();
         if (mCurrentLocation != null) {
             mLatitudeTextView.setText(String.valueOf(mCurrentLocation.getLatitude()));
             mLongitudeTextView.setText(String.valueOf(mCurrentLocation.getLongitude()));
             mLastUpdateTimeTextView.setText(mLastUpdateTime);
         }
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mGoogleApiClient.connect();
-        // check location settings to ensure GPS is enabled
-        checkLocationSettings();
     }
 
     @Override

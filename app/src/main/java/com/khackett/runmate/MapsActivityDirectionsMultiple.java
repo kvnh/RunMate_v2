@@ -385,7 +385,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
             // For storing data from web service
             String data = "";
             try {
-                // Fetching the data from web service
+                // Fetch and process the web page content and return resultant String
                 data = downloadUrl(url[0]);
             } catch (Exception e) {
                 Log.d("Background Task", e.toString());
