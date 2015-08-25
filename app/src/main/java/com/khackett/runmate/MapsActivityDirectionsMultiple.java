@@ -116,7 +116,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         // Removes all marker points from the map
         mRoute.getMarkerPoints().clear();
         // Removes all LatLng points from the map
-        mRoute.getMinMaxLatLngArray().clear();
+        mRoute.getMinMaxLatLngArrayList().clear();
+        mRoute.getMinMaxLatLngSectionArrayList().clear();
     }
 
     /**
@@ -188,7 +189,10 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
 
             // Remove last value from the markerPoints array list
             mRoute.undoLastMarkerPoint();
-            // undo the last point added to the
+
+            mRoute.undoLastMinMaxLatLng();
+
+            // Remove the last distance added to the distance array
             mRoute.undoLastRouteDistance();
             // Update the distance text and output new value to UI
             double routeDistance = mRoute.getTotalDistance();
@@ -247,15 +251,11 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         // Add a new marker to the map
         mMap.addMarker(marker);
 
-//        System.out.println("Enhanced for");
-//        for (LatLng line : markerPoints) {
-//            System.out.println(line);
-//        }
     }
 
     private void zoomToArea() {
         LatLngBounds latLngBounds = mRoute.getLatLngBounds();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 40));
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 60));
     }
 
     private boolean markerCountValidCheck() {
@@ -396,10 +396,12 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
 
+            ArrayList<LatLng> sectionLatLng = null;
             PolylineOptions lineOptions = null;
             // Traversing through all the routes
             for (int i = 0; i < result.size(); i++) {
                 lineOptions = new PolylineOptions();
+                sectionLatLng = new ArrayList<LatLng>();
                 // Fetching i-th route
                 List<HashMap<String, String>> path = result.get(i);
                 // Fetching all the points in i-th route
@@ -409,11 +411,15 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
 
+                    sectionLatLng.add(position);
+
                     mRoute.setMinMaxLatLng(position);
 
                     // Adding all the points in the route to LineOptions
                     lineOptions.add(position).width(6).color(Color.BLUE);
                 }
+
+                mRoute.setMinMaxLatLngSectionArrayList(sectionLatLng);
 
                 // Add Polyline to list and draw on map
                 polylines.add(mMap.addPolyline(lineOptions));

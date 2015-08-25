@@ -11,7 +11,7 @@ import java.util.List;
  * Created by KHackett on 24/08/15.
  */
 public class Route {
-    
+
     private double mLatitudeMax;
     private double mLongitudeMax;
     private double mLatitudeMin;
@@ -20,6 +20,7 @@ public class Route {
     private ArrayList<Double> totalDistanceArray;
     private ArrayList<LatLng> markerPoints;
     private ArrayList<LatLng> minMaxLatLngArrayList;
+    private ArrayList<ArrayList<LatLng>> minMaxLatLngSectionArrayList;
     private ArrayList<Polyline> polylines;
 
     /**
@@ -29,6 +30,7 @@ public class Route {
         markerPoints = new ArrayList<LatLng>();
         totalDistanceArray = new ArrayList<Double>();
         minMaxLatLngArrayList = new ArrayList<LatLng>();
+        minMaxLatLngSectionArrayList = new ArrayList<ArrayList<LatLng>>();
         mLatitudeMax = 0;
         mLongitudeMax = 0;
         mLatitudeMin = 0;
@@ -108,15 +110,6 @@ public class Route {
     }
 
     /**
-     * Gets every location point stored in the route
-     *
-     * @return an array of every location point created in the route
-     */
-    public ArrayList<LatLng> getMinMaxLatLngArray() {
-        return minMaxLatLngArrayList;
-    }
-
-    /**
      * Sets the LatLng points stored in the route
      *
      * @param minMaxLatLng
@@ -126,13 +119,50 @@ public class Route {
     }
 
     /**
+     * Gets every location point stored in the route
+     *
+     * @return an array of every location point created in the route
+     */
+    public ArrayList<LatLng> getMinMaxLatLngArrayList() {
+        ArrayList<LatLng> innerList = new ArrayList<LatLng>();
+        for (ArrayList<LatLng> minMaxLatLngSection : minMaxLatLngSectionArrayList) {
+            for (LatLng minMaxLatLng : minMaxLatLngSection) {
+                innerList.add(minMaxLatLng);
+            }
+        }
+        minMaxLatLngArrayList = innerList;
+        return minMaxLatLngArrayList;
+    }
+
+    /**
+     * Sets the section of LatLng points to an array list
+     * @param minMaxLatLngSectionArrayList
+     */
+    public void setMinMaxLatLngSectionArrayList(ArrayList<LatLng> minMaxLatLngSectionArrayList) {
+        this.minMaxLatLngSectionArrayList.add(minMaxLatLngSectionArrayList);
+    }
+
+    /**
+     * Get the array list of array list for each section plotted on the route
+     *
+     * @return the list for each section plotted on the route
+     */
+    public ArrayList<ArrayList<LatLng>> getMinMaxLatLngSectionArrayList() {
+        return minMaxLatLngSectionArrayList;
+    }
+
+    public void undoLastMinMaxLatLng() {
+        minMaxLatLngSectionArrayList.remove(minMaxLatLngSectionArrayList.size() - 1);
+    }
+
+    /**
      * Gets the maximum latitude point in the route
      *
      * @return the maximum latitude point
      */
     public double getLatitudeMax() {
-        mLatitudeMax = minMaxLatLngArrayList.get(0).latitude;
-        for (LatLng position : minMaxLatLngArrayList) {
+        mLatitudeMax = getMinMaxLatLngArrayList().get(0).latitude;
+        for (LatLng position : getMinMaxLatLngArrayList()) {
             if (mLatitudeMax < position.latitude)
                 mLatitudeMax = position.latitude;
         }
@@ -145,8 +175,8 @@ public class Route {
      * @return the maximum longitude point
      */
     public double getLongitudeMax() {
-        mLongitudeMax = minMaxLatLngArrayList.get(0).longitude;
-        for (LatLng position : minMaxLatLngArrayList) {
+        mLongitudeMax = getMinMaxLatLngArrayList().get(0).longitude;
+        for (LatLng position : getMinMaxLatLngArrayList()) {
             if (mLongitudeMax < position.longitude)
                 mLongitudeMax = position.longitude;
         }
@@ -159,8 +189,8 @@ public class Route {
      * @return the minimum latitude point
      */
     public double getLatitudeMin() {
-        mLatitudeMin = minMaxLatLngArrayList.get(0).latitude;
-        for (LatLng position : minMaxLatLngArrayList) {
+        mLatitudeMin = getMinMaxLatLngArrayList().get(0).latitude;
+        for (LatLng position : getMinMaxLatLngArrayList()) {
             if (mLatitudeMin > position.latitude)
                 mLatitudeMin = position.latitude;
         }
@@ -173,8 +203,8 @@ public class Route {
      * @return the minimum longitude point
      */
     public double getLongitudeMin() {
-        mLongitudeMin = minMaxLatLngArrayList.get(0).longitude;
-        for (LatLng position : minMaxLatLngArrayList) {
+        mLongitudeMin = getMinMaxLatLngArrayList().get(0).longitude;
+        for (LatLng position : getMinMaxLatLngArrayList()) {
             if (mLongitudeMin > position.longitude)
                 mLongitudeMin = position.longitude;
         }
