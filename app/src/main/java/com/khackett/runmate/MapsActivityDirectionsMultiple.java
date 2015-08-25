@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.khackett.runmate.model.Route;
 import com.khackett.runmate.utils.DirectionsJSONParser;
 
 import org.json.JSONArray;
@@ -43,15 +44,7 @@ import java.util.List;
 public class MapsActivityDirectionsMultiple extends FragmentActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, View.OnClickListener {
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
-    double mLatitude = 0;
-    double mLongitude = 0;
-    double mLatitudeMax = 0;
-    double mLongitudeMax = 0;
-    double mLatitudeMin = 0;
-    double mLongitudeMin = 0;
-    ArrayList<LatLng> markerPoints;
-    ArrayList<LatLng> minMaxLatLng;
-    ArrayList<Double> distanceCount;
+
     List<Polyline> polylines;
 
     // Member variable for the UI buttons
@@ -60,6 +53,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
     protected Button mButtonCompleteLoop;
     protected TextView mDistanceCount;
 
+    private Route mRoute;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -67,10 +62,9 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         setContentView(R.layout.activity_maps_activity_directions_multiple);
 
         // Initialising array lists
-        markerPoints = new ArrayList<LatLng>();
-        minMaxLatLng = new ArrayList<LatLng>();
-        distanceCount = new ArrayList<Double>();
         polylines = new ArrayList<Polyline>();
+
+        mRoute = new Route();
 
         // Getting reference to SupportMapFragment of the activity_maps
         SupportMapFragment fm = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -119,9 +113,10 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
     public void onMapLongClick(LatLng latLng) {
         // Map will be cleared on long click
         mMap.clear();
-        // Removes all the points in the ArrayList
-        markerPoints.clear();
-        minMaxLatLng.clear();
+        // Removes all marker points from the map
+        mRoute.getMarkerPoints().clear();
+        // Removes all LatLng points from the map
+        mRoute.getMinMaxLatLngArray().clear();
     }
 
     /**
@@ -154,14 +149,14 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
             // Declare intent to capture a route using whatever camera app is available
             Intent createRouteIntent = new Intent(MapsActivityDirectionsMultiple.this, RouteRecipientsActivity.class);
             // Using android.location to extend Parcelable in order to create and store the LatLng values in an arrayList
-            createRouteIntent.putParcelableArrayListExtra("markerPoints", markerPoints);
+            createRouteIntent.putParcelableArrayListExtra("markerPoints", mRoute.getMarkerPoints());
             // Start RouteRecipientsActivity in order to choose recipients
             startActivity(createRouteIntent);
         }
     }
 
     public void undoClick() {
-        if (markerPoints.size() <= 1) {
+        if (mRoute.getMarkerPoints().size() <= 1) {
             // Alert user that they cannot trigger the undo action any more
             AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
             // Set the message title and text for the button - use String resources for all of these values
@@ -175,10 +170,9 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
             AlertDialog dialog = builder.create();
             dialog.show();
         } else {
-
             // Create variable for the 2nd last point clicked and assign value form markerPoints array list
             LatLng lastPoint;
-            lastPoint = markerPoints.get(markerPoints.size() - 2);
+            lastPoint = mRoute.getMarkerPoints().get(mRoute.getMarkerPoints().size() - 2);
 
             // Animate camera to centre on the previously touched position
             System.out.println("Centering camera to previous position at " + lastPoint.toString());
@@ -193,17 +187,11 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
             }
 
             // Remove last value from the markerPoints array list
-            markerPoints.remove(markerPoints.size() - 1);
-
-            // Update the distance text
-            double routeDistance = 0;
-            distanceCount.remove(distanceCount.size() - 1);
-            for (Double step : distanceCount) {
-                routeDistance += step;
-            }
-
-            System.out.println("Total Distance calculated in undo in m = " + routeDistance);
-            // Output new value to ui
+            mRoute.undoLastMarkerPoint();
+            // undo the last point added to the
+            mRoute.undoLastRouteDistance();
+            // Update the distance text and output new value to UI
+            double routeDistance = mRoute.getTotalDistance();
             mDistanceCount.setText(routeDistance / 1000 + "km");
         }
     }
@@ -214,7 +202,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
             // alert user to add more points
         } else {
             // Complete loop by plotting the first point plotted
-            plotPoint(markerPoints.get(0));
+            plotPoint(mRoute.getMarkerPoints().get(0));
             zoomToArea();
         }
     }
@@ -223,8 +211,9 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         // Animate camera to centre on touched position
         mMap.animateCamera(CameraUpdateFactory.newLatLng(point));
 
+
         // Adding new latlng point to the array list
-        markerPoints.add(point);
+        mRoute.setMarkerPoint(point);
 
         // Creating MarkerOptions object
         MarkerOptions marker = new MarkerOptions();
@@ -233,14 +222,14 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         marker.position(point);
 
         // For the start location, the colour of the marker is GREEN
-        if (markerPoints.size() == 1) {
+        if (mRoute.getMarkerPoints().size() == 1) {
             // Place a green marker for the start position
             marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
         }
 
-        if (markerPoints.size() >= 2) {
-            LatLng point1 = markerPoints.get(markerPoints.size() - 2);
-            LatLng point2 = markerPoints.get(markerPoints.size() - 1);
+        if (mRoute.getMarkerPoints().size() >= 2) {
+            LatLng point1 = mRoute.getMarkerPoint1();
+            LatLng point2 = mRoute.getMarkerPoint2();
 
             // marker.position(point2).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
             // marker.position(point2).visible(true);
@@ -258,44 +247,20 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         // Add a new marker to the map
         mMap.addMarker(marker);
 
-        System.out.println("Enhanced for");
-        for (LatLng line : markerPoints) {
-            System.out.println(line);
-        }
+//        System.out.println("Enhanced for");
+//        for (LatLng line : markerPoints) {
+//            System.out.println(line);
+//        }
     }
 
     private void zoomToArea() {
-
-        mLatitudeMin = minMaxLatLng.get(0).latitude;
-        mLatitudeMax = minMaxLatLng.get(0).latitude;
-        mLongitudeMin = minMaxLatLng.get(0).longitude;
-        mLongitudeMax = minMaxLatLng.get(0).longitude;
-
-        for (LatLng position : minMaxLatLng) {
-            if (mLatitudeMin > position.latitude)
-                mLatitudeMin = position.latitude;
-
-            if (mLatitudeMax < position.latitude)
-                mLatitudeMax = position.latitude;
-
-            if (mLongitudeMin > position.longitude)
-                mLongitudeMin = position.longitude;
-
-            if (mLongitudeMax < position.longitude)
-                mLongitudeMax = position.longitude;
-        }
-
-        LatLng southWest = new LatLng(mLatitudeMin, mLongitudeMin);
-        LatLng northEast = new LatLng(mLatitudeMax, mLongitudeMax);
-        LatLngBounds latLngBounds = new LatLngBounds(southWest, northEast);
-
+        LatLngBounds latLngBounds = mRoute.getLatLngBounds();
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds, 40));
-
     }
 
     private boolean markerCountValidCheck() {
         // Ensure that there are at least 2 points in the ArrayList
-        if (markerPoints.size() <= 1) {
+        if (mRoute.getMarkerPoints().size() <= 1) {
             // If not, display a message to the user - use a dialog so that some user interaction is required before it disappears
             // Use Builder to build and configure the alert
             AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDirectionsMultiple.this);
@@ -444,11 +409,12 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
                     double lng = Double.parseDouble(point.get("lng"));
                     LatLng position = new LatLng(lat, lng);
 
-                    minMaxLatLng.add(position);
+                    mRoute.setMinMaxLatLng(position);
 
                     // Adding all the points in the route to LineOptions
                     lineOptions.add(position).width(6).color(Color.BLUE);
                 }
+
                 // Add Polyline to list and draw on map
                 polylines.add(mMap.addPolyline(lineOptions));
             }
@@ -488,11 +454,8 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(Double distance) {
-            double routeDistance = 0;
-            distanceCount.add(distance);
-            for (Double step : distanceCount) {
-                routeDistance += step;
-            }
+            mRoute.setTotalDistance(distance);
+            double routeDistance = mRoute.getTotalDistance();
             System.out.println("Total Distance calculated in AsyncTask in m = " + routeDistance);
             mDistanceCount.setText(routeDistance / 1000 + "km");
         }
@@ -528,27 +491,27 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
     }
 
-    /**
-     * set the camera to centre on the users current location
-     */
-    public void centreCamera() {
-        // http://stackoverflow.com/questions/23226056/to-use-or-not-to-use-getmylocation-in-google-maps-api-v2-for-android
-
-        // Getting LocationManager object from System Service LOCATION_SERVICE
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        // Creating a criteria object to retrieve provider
-        Criteria criteria = new Criteria();
-        // Getting the name of the best provider
-        String provider = locationManager.getBestProvider(criteria, true);
-        // Getting Current Location From GPS
-        Location location = locationManager.getLastKnownLocation(provider);
-
-        mLatitude = location.getLatitude();
-        mLongitude = location.getLongitude();
-        LatLng point = new LatLng(mLatitude, mLongitude);
-
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
-    }
+//    /**
+//     * set the camera to centre on the users current location
+//     */
+//    public void centreCamera() {
+//        // http://stackoverflow.com/questions/23226056/to-use-or-not-to-use-getmylocation-in-google-maps-api-v2-for-android
+//
+//        // Getting LocationManager object from System Service LOCATION_SERVICE
+//        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//        // Creating a criteria object to retrieve provider
+//        Criteria criteria = new Criteria();
+//        // Getting the name of the best provider
+//        String provider = locationManager.getBestProvider(criteria, true);
+//        // Getting Current Location From GPS
+//        Location location = locationManager.getLastKnownLocation(provider);
+//
+//        mLatitude = location.getLatitude();
+//        mLongitude = location.getLongitude();
+//        LatLng point = new LatLng(mLatitude, mLongitude);
+//
+//        mMap.moveCamera(CameraUpdateFactory.newLatLng(point));
+//        mMap.animateCamera(CameraUpdateFactory.zoomTo(16));
+//    }
 
 }

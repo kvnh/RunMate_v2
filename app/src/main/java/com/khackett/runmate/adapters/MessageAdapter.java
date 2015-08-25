@@ -45,7 +45,7 @@ public class MessageAdapter extends ArrayAdapter<ParseObject> {
         // we want to create a method that is efficient for the list view
         // the more efficient we are in this method, the better our list view will perform
         // - this affects things like scrolling or tapping on items
-        // a common pattern that heplp with this is the ViewHolder PATTERN!!!
+        // a common pattern that help with this is the ViewHolder PATTERN!!!
         ViewHolder holder; // we need to create this ViewHolder class
 
         // when doing a custom list adapter, the convention is to create a private static class that we can reference - see below

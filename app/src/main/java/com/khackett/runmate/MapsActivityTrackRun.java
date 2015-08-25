@@ -478,7 +478,7 @@ public class MapsActivityTrackRun extends FragmentActivity implements
         if (!location.hasAccuracy()) {
             return;
         }
-        if (location.getAccuracy() > 40) {
+        if (location.getAccuracy() > 5) {
             return;
         }
 
