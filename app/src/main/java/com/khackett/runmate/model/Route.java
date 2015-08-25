@@ -60,6 +60,13 @@ public class Route {
     }
 
     /**
+     * Clear the total distance array
+     */
+    public void clearTotalDistance(){
+        totalDistanceArray.clear();
+    }
+
+    /**
      * Removes the last section added to the route
      */
     public void undoLastRouteDistance() {

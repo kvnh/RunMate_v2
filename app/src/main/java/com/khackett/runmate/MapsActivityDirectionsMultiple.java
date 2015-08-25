@@ -100,7 +100,6 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         mButtonSend.setOnClickListener(this);
         mButtonUndo.setOnClickListener(this);
         mButtonCompleteLoop.setOnClickListener(this);
-
     }
 
     @Override
@@ -118,6 +117,11 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         // Removes all LatLng points from the map
         mRoute.getMinMaxLatLngArrayList().clear();
         mRoute.getMinMaxLatLngSectionArrayList().clear();
+
+        // Clear the distance array and update UI
+        mRoute.clearTotalDistance();
+        double routeDistance = mRoute.getTotalDistance();
+        mDistanceCount.setText(routeDistance / 1000 + "km");
     }
 
     /**
