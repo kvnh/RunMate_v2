@@ -1,7 +1,6 @@
 package com.khackett.runmate;
 
 import android.app.AlertDialog;
-import android.content.Intent;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
@@ -22,13 +21,14 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.khackett.runmate.activity.MainActivity;
 import com.khackett.runmate.utils.DirectionsJSONParser;
 import com.khackett.runmate.utils.ParseConstants;
-import com.parse.DeleteCallback;
+import com.parse.GetCallback;
 import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
 import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,6 +45,8 @@ import java.util.HashMap;
 import java.util.List;
 
 public class MapsActivityDisplayRoute extends FragmentActivity implements View.OnClickListener {
+
+    private static final String TAG = "MapsActivityDisplayRoute";
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
@@ -146,10 +148,10 @@ public class MapsActivityDisplayRoute extends FragmentActivity implements View.O
                 // Add a new marker to the map
                 // mMap.addMarker(marker);
 
-                System.out.println("Enhanced for");
-                for (LatLng line : markerPoints) {
-                    System.out.println(line);
-                }
+//                System.out.println("Enhanced for");
+//                for (LatLng line : markerPoints) {
+//                    System.out.println(line);
+//                }
 
             }
 
@@ -179,6 +181,7 @@ public class MapsActivityDisplayRoute extends FragmentActivity implements View.O
                 break;
             case R.id.btn_decline:
                 // do something
+                Log.i(TAG, "entering declineRoute");
                 declineRoute();
                 break;
             case R.id.btn_animate:
@@ -191,15 +194,13 @@ public class MapsActivityDisplayRoute extends FragmentActivity implements View.O
 
     public void declineRoute() {
         String objectId = getIntent().getStringExtra("myObjectId");
-        // ParseObject.createWithoutData(ParseConstants.CLASS_ROUTES, objectId).deleteEventually();
-        ParseObject.createWithoutData(ParseConstants.CLASS_ROUTES, objectId).deleteInBackground(new DeleteCallback() {
-            @Override
-            public void done(ParseException e) {
+        ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseConstants.CLASS_ROUTES);
+        query.getInBackground(objectId, new GetCallback<ParseObject>() {
+            public void done(ParseObject object, ParseException e) {
                 if (e == null) {
-                    // successful
-                    Toast.makeText(MapsActivityDisplayRoute.this, R.string.success_decline_route, Toast.LENGTH_LONG).show();
+                    deleteUserRoute(object);
                 } else {
-                    // there is an error - notify the user so they don't miss it
+//                    // there is an error - notify the user so they don't miss it
                     AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDisplayRoute.this);
                     builder.setMessage(R.string.error_declining_route_message)
                             .setTitle(R.string.error_declining_route_title)
@@ -211,11 +212,28 @@ public class MapsActivityDisplayRoute extends FragmentActivity implements View.O
         });
 
         // Send the user back to the main activity right after the message is deleted.
-        // Use finish() to close the current activity and start a new main activity intent
+        // Use finish() to close the current activity, returning to the main activity
         finish();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
+    }
 
+    public void deleteUserRoute(ParseObject object) {
+        ParseObject route = object;
+        List<String> ids = route.getList(ParseConstants.KEY_RECIPIENT_IDS);
+
+        if (ids.size() == 1) {
+            // last recipient - delete the whole thing!
+            route.deleteInBackground();
+        } else {
+            // remove the recipient and save
+            ids.remove(ParseUser.getCurrentUser().getObjectId());
+
+            ArrayList<String> idsToRemove = new ArrayList<String>();
+            idsToRemove.add(ParseUser.getCurrentUser().getObjectId());
+
+            route.removeAll(ParseConstants.KEY_RECIPIENT_IDS, idsToRemove);
+            route.saveInBackground();
+        }
+        Toast.makeText(MapsActivityDisplayRoute.this, R.string.success_decline_route, Toast.LENGTH_LONG).show();
     }
 
 

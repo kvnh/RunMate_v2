@@ -19,6 +19,7 @@ import com.parse.ParseUser;
 
 import org.json.JSONArray;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class InboxRouteFragment extends ListFragment {
@@ -220,21 +221,19 @@ public class InboxRouteFragment extends ListFragment {
 
         JSONArray parseList = route.getJSONArray("latLngPoints");
         String objectId = route.getObjectId();
+        // JSONArray ids = route.getJSONArray(ParseConstants.KEY_RECIPIENT_IDS);
+
         // JSONArray parseListAllLatLngPoints = route.getJSONArray("allLatLngPoints");
 
         // start a map activity to display the route
         Intent intent = new Intent(getActivity(), MapsActivityDisplayRoute.class);
         intent.putExtra("myParseList", parseList.toString());
         intent.putExtra("myObjectId", objectId);
+        // intent.putExtra("ids", ids.toString());
         // intent.putExtra("myParseList", parseListAllLatLngPoints.toString());
         // intent.putParcelableArrayListExtra("myParseList", parseList);
         startActivity(intent);
 
-
-//        List<String> ids = route.getList(ParseConstants.KEY_RECIPIENT_IDS);
-//        route.deleteInBackground();
-
     }
-
 
 }
