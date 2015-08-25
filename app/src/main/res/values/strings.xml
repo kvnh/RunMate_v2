@@ -33,7 +33,7 @@
 
     <string name="progress_bar">Progress Bar</string>
 
-    <string name="empty_inbox_label">No new messages</string>
+    <string name="empty_inbox_label">No new routes</string>
     <string name="empty_friends_label">No fiends yet... Add some to begin</string>
     <string name="title_activity_edit_friends">Edit Friends</string>
     <string name="title_activity_maps_activity_manual_polyline">Manual Polyline</string>
@@ -42,7 +42,8 @@
 
     <string name="menu_camera_label">Camera</string>
     <string name="str_btn_send">Send Route</string>
-    <string name="str_btn_accept">Accept Route</string>
+    <string name="str_btn_accept">Accept</string>
+    <string name="str_btn_decline">Decline</string>
     <string name="str_btn_animate">Animate Route</string>
 
     <string-array name="camera_choices">
@@ -63,9 +64,13 @@
     <string name="video_file_size_warning">The selected video must be less than 10MB</string>
     <string name="error_opening_file">There was a problem with the selected file</string>
     <string name="error_file_size_too_large">The selected file is too large. Please select a new file</string>
-    <string name="error_selecting_file">There was an error with the file selected. Please select a different file</string>
+    <string name="error_selecting_recipient_message">There was an error with the recipient selected. Please try again</string>
+    <string name="error_selecting_recipient_title">We\'re sorry</string>
     <string name="error_sending_message">There was an error sending your message. Please try again</string>
-    <string name="error_selecting_file_title">We\'re sorry</string>
+    <string name="error_sending_title">We\'re sorry</string>
+    <string name="error_declining_route_message">There was an error declining the route. Please try again</string>
+    <string name="error_declining_route_title">We\'re sorry</string>
+    <string name="success_decline_route">Route successfully deleted</string>
     <string name="title_activity_recipients">Choose Recipients</string>
 
     <string name="empty_recipients_list_string">Choose some friends first...</string>
@@ -81,7 +86,7 @@
     <string name="route_undo_error_title">Steady on...</string>
     <string name="title_activity_route_recipients">RouteRecipientsActivity</string>
     <string name="success_route">Route sent</string>
-    <string name="error_sending_route">There was an error sending your route. Please try again</string>
+    <string name="error_sending_route_message">There was an error sending your route. Please try again</string>
     <string name="title_activity_maps_activity_display_route">Map</string>
     <string name="title_activity_inbox_route_fragment">InboxRouteFragment</string>
 

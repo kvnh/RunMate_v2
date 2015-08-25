@@ -24,7 +24,6 @@ import java.util.List;
 public class InboxRouteFragment extends ListFragment {
 
 
-
     private GoogleMap mMap;
 
     // member variable to store the list of messages received by the user
@@ -72,15 +71,15 @@ public class InboxRouteFragment extends ListFragment {
 //                // the list being returned is a list of messages
 //                if (e == null) {
 //                    // successful - messages found.  They are stored as a list in messages
-//                    mMessages = messages;
+//                    mRoutes = messages;
 //
 //                    // adapt this data for the list view, showing the senders name
 //
 //                    // create an array of strings to store the usernames and set the size equal to that of the list returned
-//                    String[] usernames = new String[mMessages.size()];
+//                    String[] usernames = new String[mRoutes.size()];
 //                    // enhanced for loop to go through the list of users and create an array of usernames
 //                    int i = 0;
-//                    for (ParseObject message : mMessages) {
+//                    for (ParseObject message : mRoutes) {
 //                        // get the specific key
 //                        usernames[i] = message.getString(ParseConstants.KEY_SENDER_NAME);
 //                        i++;
@@ -95,7 +94,7 @@ public class InboxRouteFragment extends ListFragment {
 ////                            usernames);
 //
 //                    // the above adapter code is now replaced with the following line
-//                    MessageAdapter adapter = new MessageAdapter(getListView().getContext(), mMessages);
+//                    MessageAdapter adapter = new MessageAdapter(getListView().getContext(), mRoutes);
 //
 //                    // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
 //                    setListAdapter(adapter);
@@ -137,11 +136,19 @@ public class InboxRouteFragment extends ListFragment {
                         i++;
                     }
 
-                    // the above adapter code is now replaced with the following line
-                    MessageAdapter adapter = new MessageAdapter(getListView().getContext(), mRoutes);
+                    // Create the adapter once and update its state on each refresh
+                    if (getListView().getAdapter() == null) {
+                        // the above adapter code is now replaced with the following line
+                        MessageAdapter adapter = new MessageAdapter(getListView().getContext(), mRoutes);
 
-                    // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
-                    setListAdapter(adapter);
+                        // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
+                        setListAdapter(adapter);
+                    } else {
+                        // refill the adapter
+                        // cast it to MessageAdapter
+                        ((MessageAdapter) getListView().getAdapter()).refill(mRoutes);
+                    }
+
                 }
 
             }
@@ -156,7 +163,7 @@ public class InboxRouteFragment extends ListFragment {
 //        super.onListItemClick(l, v, position, id);
 //        // to tell whether it is an image or a video, we need to access the type of the message
 //        // create the message object which is set to the message at the current position
-//        ParseObject message = mMessages.get(position);
+//        ParseObject message = mRoutes.get(position);
 //        String messageType = message.getString(ParseConstants.KEY_FILE_TYPE);
 //
 //        // for both image and videos, we can view them directly from the backend on parse by getting their URL
@@ -210,20 +217,24 @@ public class InboxRouteFragment extends ListFragment {
         // (URI's and URL's can often be used interchangeably)
         // Uri fileUri = Uri.parse(file.getUrl());
 
-//        System.out.println("Testing latLngPoints when item on list is clicked with getJSONArray");
-//        System.out.println(route.getJSONArray("latLngPoints"));
-//
-//        System.out.println("Testing latLngPoints when item on list is clicked with getList");
-//        System.out.println(route.getList("latLngPoints"));
-
 
         JSONArray parseList = route.getJSONArray("latLngPoints");
+        String objectId = route.getObjectId();
+        // JSONArray parseListAllLatLngPoints = route.getJSONArray("allLatLngPoints");
 
         // start a map activity to display the route
         Intent intent = new Intent(getActivity(), MapsActivityDisplayRoute.class);
         intent.putExtra("myParseList", parseList.toString());
+        intent.putExtra("myObjectId", objectId);
+        // intent.putExtra("myParseList", parseListAllLatLngPoints.toString());
         // intent.putParcelableArrayListExtra("myParseList", parseList);
         startActivity(intent);
 
+
+//        List<String> ids = route.getList(ParseConstants.KEY_RECIPIENT_IDS);
+//        route.deleteInBackground();
+
     }
+
+
 }

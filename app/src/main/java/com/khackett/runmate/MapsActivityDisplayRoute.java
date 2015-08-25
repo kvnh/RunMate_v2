@@ -1,19 +1,18 @@
 package com.khackett.runmate;
 
+import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.animation.Interpolator;
-import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,12 +20,15 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.khackett.runmate.activity.MainActivity;
 import com.khackett.runmate.utils.DirectionsJSONParser;
+import com.khackett.runmate.utils.ParseConstants;
+import com.parse.DeleteCallback;
+import com.parse.ParseException;
 import com.parse.ParseGeoPoint;
+import com.parse.ParseObject;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -46,11 +48,13 @@ public class MapsActivityDisplayRoute extends FragmentActivity implements View.O
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
 
+    // Member variable for the UI buttons
+    protected Button mButtonAccept;
+    protected Button mButtonDecline;
+    protected Button mButtonAnimate;
+
     double mLatitude = 0;
     double mLongitude = 0;
-
-    // Member variable for the UI buttons
-    protected Button mButtonAnimate;
 
     // member variable to represent an array of LatLng values, used to retrieve the sent route via the Directions API
     protected ArrayList<LatLng> markerPoints;
@@ -153,10 +157,13 @@ public class MapsActivityDisplayRoute extends FragmentActivity implements View.O
 
         // Set up member variables for each UI component
         mButtonAnimate = (Button) findViewById(R.id.btn_animate);
+        mButtonAccept = (Button) findViewById(R.id.btn_accept);
+        mButtonDecline = (Button) findViewById(R.id.btn_decline);
 
         // Register buttons with the listener
         mButtonAnimate.setOnClickListener(this);
-
+        mButtonAccept.setOnClickListener(this);
+        mButtonDecline.setOnClickListener(this);
     }
 
     /**
@@ -167,16 +174,50 @@ public class MapsActivityDisplayRoute extends FragmentActivity implements View.O
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
+            case R.id.btn_accept:
+                // do something
+                break;
+            case R.id.btn_decline:
+                // do something
+                declineRoute();
+                break;
             case R.id.btn_animate:
                 animateRoute();
                 break;
-//            case R.id.btn_accept:
-//                // do something
-//                break;
             default:
                 System.out.println("Problem with input");
         }
     }
+
+    public void declineRoute() {
+        String objectId = getIntent().getStringExtra("myObjectId");
+        // ParseObject.createWithoutData(ParseConstants.CLASS_ROUTES, objectId).deleteEventually();
+        ParseObject.createWithoutData(ParseConstants.CLASS_ROUTES, objectId).deleteInBackground(new DeleteCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    // successful
+                    Toast.makeText(MapsActivityDisplayRoute.this, R.string.success_decline_route, Toast.LENGTH_LONG).show();
+                } else {
+                    // there is an error - notify the user so they don't miss it
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MapsActivityDisplayRoute.this);
+                    builder.setMessage(R.string.error_declining_route_message)
+                            .setTitle(R.string.error_declining_route_title)
+                            .setPositiveButton(android.R.string.ok, null);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+            }
+        });
+
+        // Send the user back to the main activity right after the message is deleted.
+        // Use finish() to close the current activity and start a new main activity intent
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+
+    }
+
 
     public void animateRoute() {
 

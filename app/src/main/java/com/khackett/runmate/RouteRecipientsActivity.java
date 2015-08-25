@@ -173,8 +173,8 @@ public class RouteRecipientsActivity extends ListActivity {
             if (route == null) {
                 // display error message
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(R.string.error_selecting_file)
-                        .setTitle(R.string.error_selecting_file_title)
+                builder.setMessage(R.string.error_selecting_recipient_message)
+                        .setTitle(R.string.error_selecting_recipient_title)
                         .setPositiveButton(android.R.string.ok, null);
                 AlertDialog dialog = builder.create();
                 dialog.show();
@@ -258,8 +258,8 @@ public class RouteRecipientsActivity extends ListActivity {
                 } else {
                     // there is an error - notify the user so they don't miss it
                     AlertDialog.Builder builder = new AlertDialog.Builder(RouteRecipientsActivity.this);
-                    builder.setMessage(R.string.error_sending_route)
-                            .setTitle(R.string.error_selecting_file_title)
+                    builder.setMessage(R.string.error_sending_route_message)
+                            .setTitle(R.string.error_sending_title)
                             .setPositiveButton(android.R.string.ok, null);
                     AlertDialog dialog = builder.create();
                     dialog.show();

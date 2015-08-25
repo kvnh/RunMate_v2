@@ -25,15 +25,15 @@ import java.util.List;
 public class MessageAdapter extends ArrayAdapter<ParseObject> {
 
     protected Context mContext;
-    protected List<ParseObject> mMessages;
+    protected List<ParseObject> mRoutes;
 
     // pass the list of activities to the MessageAdapter
 
     // create a constructor
-    public MessageAdapter(Context context, List<ParseObject> messages) {
-        super(context, R.layout.message_item, messages);
+    public MessageAdapter(Context context, List<ParseObject> routes) {
+        super(context, R.layout.message_item, routes);
         mContext = context;
-        mMessages = messages;
+        mRoutes = routes;
     }
 
     // in fragments, the adapter called an appropriate method to get a fragment, then it adapter it and then put in the view
@@ -71,7 +71,7 @@ public class MessageAdapter extends ArrayAdapter<ParseObject> {
 
         // set the data in the view - picture icon and name
         // get the parse object that corresponds to position, because getView() is going to be called for each position in the list
-        ParseObject message = mMessages.get(position);
+        ParseObject message = mRoutes.get(position);
 
 //        // change the icon based on the message type
 //        if (message.getString(ParseConstants.KEY_FILE_TYPE).equals(ParseConstants.TYPE_IMAGE)) {
@@ -90,5 +90,15 @@ public class MessageAdapter extends ArrayAdapter<ParseObject> {
         // we have 2 pieces of data - a text view and an image view
         ImageView iconImageView;
         TextView nameLabel;
+    }
+
+    // method to refill the list with ParseObject data if it is not null
+    public void refill(List<ParseObject> messages){
+        // clear the current data
+        mRoutes.clear();
+        // add all the new ones
+        mRoutes.addAll(messages);
+        //  need to call notifyDataSetChanged() on the adapter after changing its contents
+        notifyDataSetChanged();
     }
 }

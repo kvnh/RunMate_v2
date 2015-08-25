@@ -179,8 +179,8 @@ public class RecipientsActivity extends ListActivity {
             if (message == null) {
                 // display error message
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setMessage(R.string.error_selecting_file)
-                        .setTitle(R.string.error_selecting_file_title)
+                builder.setMessage(R.string.error_selecting_recipient_message)
+                        .setTitle(R.string.error_selecting_recipient_title)
                         .setPositiveButton(android.R.string.ok, null);
                 AlertDialog dialog = builder.create();
                 dialog.show();
@@ -294,7 +294,7 @@ public class RecipientsActivity extends ListActivity {
                     // there is an error - notify the user so they don't miss it
                     AlertDialog.Builder builder = new AlertDialog.Builder(RecipientsActivity.this);
                     builder.setMessage(R.string.error_sending_message)
-                            .setTitle(R.string.error_selecting_file_title)
+                            .setTitle(R.string.error_sending_title)
                             .setPositiveButton(android.R.string.ok, null);
                     AlertDialog dialog = builder.create();
                     dialog.show();

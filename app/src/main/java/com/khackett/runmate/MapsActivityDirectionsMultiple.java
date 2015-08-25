@@ -151,7 +151,7 @@ public class MapsActivityDirectionsMultiple extends FragmentActivity implements 
         if (!markerCountValidCheck()) {
             // alert user to add more points
         } else {
-            // Declare intent to capture a route using whatever camera app is available
+            // Declare intent to capture a route
             Intent createRouteIntent = new Intent(MapsActivityDirectionsMultiple.this, RouteRecipientsActivity.class);
             // Using android.location to extend Parcelable in order to create and store the LatLng values in an arrayList
             createRouteIntent.putParcelableArrayListExtra("markerPoints", mRoute.getMarkerPoints());
