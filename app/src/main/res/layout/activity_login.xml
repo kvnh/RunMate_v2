@@ -1,85 +1,47 @@
 <RelativeLayout
+    style="@style/AuthBackground"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@mipmap/background_fill"
     tools:context="com.khackett.runmate.LoginActivity">
 
     <ImageView
         android:id="@+id/backgroundImage"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:contentDescription="@string/content_description_background"
-        android:scaleType="fitStart"
-        android:src="@mipmap/background"/>
-
+        style="@style/AuthenticationBackgroundImage"
+        android:contentDescription="@string/content_description_background"/>
 
     <TextView
         android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="32dp"
-        android:text="@string/app_name"
-        android:textColor="@android:color/white"
-        android:textSize="60sp"
-        android:textStyle="bold"/>
+        style="@style/AuthenticationTitle"/>
 
     <TextView
         android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
-        android:layout_centerHorizontal="true"
-        android:text="@string/subtitle"
-        android:textColor="@android:color/white"
-        android:textSize="13sp"
-        android:textStyle="bold"/>
+        style="@style/AuthenticationTitle.AuthenticationSubTitle"/>
 
     <LinearLayout
         android:id="@+id/editTextLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/subtitle"
-        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-        android:layout_marginRight="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/login_vertical_margin"
-        android:background="@android:color/white"
-        android:orientation="vertical"
-        android:paddingBottom="@dimen/login_vertical_padding"
-        android:paddingLeft="@dimen/login_horizontal_padding"
-        android:paddingRight="@dimen/login_horizontal_padding"
-        android:paddingTop="@dimen/login_vertical_padding">
+        style="@style/AuthenticationFieldContainer">
 
         <EditText
             android:id="@+id/usernameField"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="@string/username_hint"
-            android:textColorHint="@color/lightGray"
-            android:textSize="17sp"/>
+            style="@style/AuthenticationEditText"
+            android:hint="@string/username_hint">
+
+            <requestFocus/>
+        </EditText>
 
         <EditText
             android:id="@+id/passwordField"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
+            style="@style/AuthenticationEditText"
             android:hint="@string/password_hint"
-            android:inputType="textPassword"
-            android:textColorHint="@color/lightGray"
-            android:textSize="17sp"/>
+            android:inputType="textPassword"/>
 
     </LinearLayout>
 
     <Button
         android:id="@+id/loginButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        style="@style/AuthenticationButton"
         android:layout_alignParentLeft="true"
         android:layout_below="@+id/editTextLayout"
         android:text="@string/login_button_label"/>

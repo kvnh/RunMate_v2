@@ -24,7 +24,7 @@ public class LoginActivity extends AppCompatActivity {
     protected EditText mPassword;
     protected Button mLoginButton;
     protected TextView mSignUpTextView;
-    protected ProgressBar mProgressBar;
+//    protected ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

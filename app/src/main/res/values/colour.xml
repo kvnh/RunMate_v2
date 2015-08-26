@@ -17,4 +17,10 @@
     <color name="lightGray">#bbbbbb</color>
 
     <color name="apptheme_color">#81408c</color>
+
+    <color name="lightPurpleButton">#e1d2f3</color>
+    <color name="pressedPurpleButton">#ba9dda</color>
+    <color name="focusedPurpleButton">#d6c3ed</color>
+    <color name="textColor">#250054</color>
+
 </resources>
