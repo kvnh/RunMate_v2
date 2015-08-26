@@ -8,4 +8,13 @@
     <color name="ColorPrimaryBlue">#0BB5FF</color>
     <color name="ColorPrimaryDarkBlue">#0198E1</color>
     <color name="tabsScrollColorBlue">#0D4F8B</color>
+
+    <color name="backgroundPurple">#3F2466</color>
+    <color name="ColorPrimaryPurple">#654F84</color>
+    <color name="ColorPrimaryDarkPurple">#523975</color>
+    <color name="tabsScrollColorPurple">#3F2466</color>
+
+    <color name="lightGray">#bbbbbb</color>
+
+    <color name="apptheme_color">#81408c</color>
 </resources>

@@ -1,59 +1,45 @@
 <resources>
 
-
-    <style name="MaterialTheme" parent="MaterialTheme.Base">
-
-    </style>
-
+    <style name="MaterialTheme" parent="MaterialTheme.Base"/>
     <style name="MaterialTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">false</item>
-        <item name="colorPrimary">@color/ColorPrimaryBlue</item>
-        <item name="colorPrimaryDark">@color/ColorPrimaryDarkBlue</item>
+        <item name="colorPrimary">@color/ColorPrimaryPurple</item>
+        <item name="colorPrimaryDark">@color/ColorPrimaryDarkPurple</item>
+
+        <item name="android:editTextBackground">@drawable/apptheme_edit_text_holo_light</item>
+        <item name="android:buttonStyle">@style/ButtonAppTheme</item>
+        <item name="android:imageButtonStyle">@style/ImageButtonAppTheme</item>
+    </style>
+
+    <style name="ButtonAppTheme" parent="android:Widget.Holo.Light.Button">
+        <item name="android:background">@drawable/apptheme_btn_default_holo_light</item>
+    </style>
+
+    <style name="ImageButtonAppTheme" parent="android:Widget.Holo.Light.ImageButton">
+        <item name="android:background">@drawable/apptheme_btn_default_holo_light</item>
     </style>
 
 
     <style name="ActionBarTheme" parent="android:style/Theme.Holo.Light.DarkActionBar">
-        <item name="android:background">@color/ColorPrimaryBlue</item>
-        <!-- Customize your theme here. -->
+        <item name="android:background">@color/ColorPrimaryPurple</item>
     </style>
-
 
     <style name="Theme.MyAppTheme" parent="@android:style/Theme.Holo">
         <item name="android:actionBarStyle">@style/Theme.MyAppTheme.ActionBar</item>
     </style>
 
     <style name="Theme.MyAppTheme.ActionBar" parent="@android:style/Widget.Holo.ActionBar">
-        <item name="android:background">@color/ColorPrimaryBlue</item>
+        <item name="android:background">@color/ColorPrimaryPurple</item>
     </style>
 
+ <!-- -->
+
+    <!--<style name="AppTheme" parent="@style/_AppTheme"/>-->
+    <!--<style name="_AppTheme" parent="android:Theme.Holo.Light">-->
+        <!--<item name="android:editTextBackground">@mipmap/apptheme_edit_text_holo_light</item>-->
+        <!--<item name="android:buttonStyle">@style/ButtonAppTheme</item>-->
+        <!--<item name="android:imageButtonStyle">@style/ImageButtonAppTheme</item>-->
+    <!--</style>-->
+
 </resources>
-
-
-
-<!--<resources>-->
-
-    <!--&lt;!&ndash; Base application theme. &ndash;&gt;-->
-    <!--<style name="NoActionBarTheme" parent="Theme.AppCompat.Light.NoActionBar">-->
-        <!--<item name="windowActionBar">false</item>-->
-        <!--<item name="colorPrimary">@color/ColorPrimaryBlue</item>-->
-        <!--<item name="colorPrimaryDark">@color/ColorPrimaryDarkBlue</item>-->
-        <!--&lt;!&ndash; Customize your theme here. &ndash;&gt;-->
-    <!--</style>-->
-
-
-    <!--<style name="ActionBarTheme" parent="android:style/Theme.Holo.Light.DarkActionBar">-->
-        <!--<item name="android:background">@color/ColorPrimaryBlue</item>-->
-        <!--&lt;!&ndash; Customize your theme here. &ndash;&gt;-->
-    <!--</style>-->
-
-
-    <!--<style name="Theme.MyAppTheme" parent="@android:style/Theme.Holo">-->
-        <!--<item name="android:actionBarStyle">@style/Theme.MyAppTheme.ActionBar</item>-->
-    <!--</style>-->
-
-    <!--<style name="Theme.MyAppTheme.ActionBar" parent="@android:style/Widget.Holo.ActionBar">-->
-        <!--<item name="android:background">@color/ColorPrimaryBlue</item>-->
-    <!--</style>-->
-
-<!--</resources>-->

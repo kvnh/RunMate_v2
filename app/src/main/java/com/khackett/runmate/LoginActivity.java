@@ -1,5 +1,6 @@
 package com.khackett.runmate;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,14 +30,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // set the progress indicator
-        // requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
         setContentView(R.layout.activity_login);
-
-        // see:
-        // https://github.com/tbonza/Blog-Reader-Android-App/blob/master/src/com/example/br_step4usingintentstodisplayandshareposts/MainListActivity.java
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         // create a variable to hold the text view from the layout
         mSignUpTextView = (TextView) findViewById(R.id.signUpText);
@@ -95,17 +89,18 @@ public class LoginActivity extends AppCompatActivity {
                     AlertDialog dialog = builder.create();
                     dialog.show();
                 } else {
-                    // Set progress bar to visible
-                    // setProgressBarIndeterminateVisibility(true);
-                    mProgressBar.setVisibility(View.VISIBLE);
+//                    // Set progress bar to visible
+//                    // setProgressBarIndeterminateVisibility(true);
+//                    mProgressBar.setVisibility(View.VISIBLE);
 
                     // Add code to attempt logging in
                     ParseUser.logInInBackground(username, password, new LogInCallback() {
                         @Override
                         public void done(ParseUser parseUser, ParseException e) {
-                            // Once contact has been made with Parse, (before the error is checked) then set progress indicator visibility to false
-                            // setProgressBarIndeterminateVisibility(false);
-                            mProgressBar.setVisibility(View.INVISIBLE);
+
+//                            // Once contact has been made with Parse, (before the error is checked) then set progress indicator visibility to false
+//                            // setProgressBarIndeterminateVisibility(false);
+//                            mProgressBar.setVisibility(View.INVISIBLE);
 
                             // The done() method returns a parseUser object
                             // if login is successful, then the parseUser variable will be initialised and the exception will be null

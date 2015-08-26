@@ -291,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements NavigationDrawerF
         tabs.setCustomTabColorizer(new SlidingTabLayout.TabColorizer() {
             @Override
             public int getIndicatorColor(int position) {
-                return getResources().getColor(R.color.tabsScrollColorBlue);
+                return getResources().getColor(R.color.tabsScrollColorPurple);
             }
         });
 

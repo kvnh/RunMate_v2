@@ -1,5 +1,6 @@
 package com.khackett.runmate;
 
+import android.app.ActionBar;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -29,17 +30,7 @@ public class SignUpActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // this method is used to request a few extended window features that have to do with the window in which our app is running (ie the whole screen of the phone)
-        // this method must be called before setContentView() method otherwise the app will crash
-        // with this method set, you can now turn the progress indicator on or off
-
-        // requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
         setContentView(R.layout.activity_sign_up);
-
-        // see:
-        // https://github.com/tbonza/Blog-Reader-Android-App/blob/master/src/com/example/br_step4usingintentstodisplayandshareposts/MainListActivity.java
-        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         // set each member variable for the ui components
         mUserName = (EditText) findViewById(R.id.usernameField);
@@ -85,9 +76,9 @@ public class SignUpActivity extends AppCompatActivity {
                     dialog.show();
                 } else {
 
-                    // set progress bar to visible
-                    // setProgressBarIndeterminateVisibility(true);
-                    mProgressBar.setVisibility(View.VISIBLE);
+//                    // set progress bar to visible
+//                    // setProgressBarIndeterminateVisibility(true);
+//                    mProgressBar.setVisibility(View.VISIBLE);
 
                     // create the new user.  First create a new ParseUser object
                     ParseUser newUser = new ParseUser();
@@ -102,9 +93,9 @@ public class SignUpActivity extends AppCompatActivity {
                         @Override
                         public void done(ParseException e) {
 
-                            // once contact has been made with parse, (before the error is checked) then set progress indicator visibility to false
-                            // setProgressBarIndeterminateVisibility(false);
-                            mProgressBar.setVisibility(View.INVISIBLE);
+//                            // once contact has been made with parse, (before the error is checked) then set progress indicator visibility to false
+//                            // setProgressBarIndeterminateVisibility(false);
+//                            mProgressBar.setVisibility(View.INVISIBLE);
 
                             // this time the done() method has a parseUser object returned
                             // if signup is successful, then the user variable will be initialised and the exception will be null
