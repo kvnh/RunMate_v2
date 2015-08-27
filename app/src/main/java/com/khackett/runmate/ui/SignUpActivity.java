@@ -36,8 +36,11 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         mEmail = (EditText) findViewById(R.id.emailField);
         mSignUpButton = (Button) findViewById(R.id.signUpButton);
         mCancelSignUpButton = (Button) findViewById(R.id.cancelSignUpButton);
-    }
 
+        // Register buttons with the listener
+        mSignUpButton.setOnClickListener(this);
+        mCancelSignUpButton.setOnClickListener(this);
+    }
 
     /**
      * Called when a view has been clicked.

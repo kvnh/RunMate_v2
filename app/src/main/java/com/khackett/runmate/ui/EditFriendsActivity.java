@@ -1,15 +1,18 @@
 package com.khackett.runmate.ui;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.khackett.runmate.R;
+import com.khackett.runmate.adapters.UserAdapter;
 import com.khackett.runmate.utils.ParseConstants;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -20,7 +23,7 @@ import com.parse.SaveCallback;
 
 import java.util.List;
 
-public class EditFriendsActivity extends ListActivity {
+public class EditFriendsActivity extends Activity {
 
     // TAG to represent the EditFriendsActivity class
     public static final String TAG = EditFriendsActivity.class.getSimpleName();
@@ -31,6 +34,8 @@ public class EditFriendsActivity extends ListActivity {
     protected List<ParseUser> mUsers;
     // set up a ParseRelation member to hold ParseUsers
     protected ParseRelation<ParseUser> mFriendsRelation;
+    // Create a variable for the GridView
+    protected GridView mGridView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +44,8 @@ public class EditFriendsActivity extends ListActivity {
         // set up progress bar
         // requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-        setContentView(R.layout.activity_edit_friends);
+        // Set the GridView layout
+        setContentView(R.layout.user_grid);
 
         // line to ensure the action bar displays in the layout
         // getActionBar().setDisplayHomeAsUpEnabled(true);
@@ -47,8 +53,18 @@ public class EditFriendsActivity extends ListActivity {
         // Show the Up button in the action bar.
         // setupActionBar();
 
-        // get the default list view associated with this activity and set it to allow multiple items/friends to be checked
-        getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        // Set the GridView in the layout
+        mGridView = (GridView) findViewById(R.id.friendsGrid);
+        // get the default grid view associated with this activity and set it to allow multiple items/friends to be checked
+        mGridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE);
+
+        // Add a listener to detect when items on the grid view have been tapped
+        mGridView.setOnItemClickListener(mOnItemClickListener);
+
+        // Check that there are friends to display - if not, display a message
+        TextView emptyFriendsList = (TextView) findViewById(android.R.id.empty);
+        // Attach this as the empty text view for the GridView
+        mGridView.setEmptyView(emptyFriendsList);
     }
 
     @Override
@@ -88,12 +104,18 @@ public class EditFriendsActivity extends ListActivity {
                         usernames[i] = user.getUsername();
                         i++;
                     }
-                    // create an array adapter and set it as the adapter for this activity
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(EditFriendsActivity.this,
-                            android.R.layout.simple_list_item_checked,
-                            usernames);
-                    // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
-                    setListAdapter(adapter);
+
+                    // Use the custom user adapter
+                    // Get the adapter associated with the GridView and check to see if it is null
+                    if (mGridView.getAdapter() == null) {
+                        // Use the custom UserAdapter to display the users in the GridView
+                        UserAdapter adapter = new UserAdapter(EditFriendsActivity.this, mUsers);
+                        // Call setAdapter for this activity to set the items in the GridView
+                        mGridView.setAdapter(adapter);
+                    } else {
+                        // GridView is not available - refill with the list of friends
+                        ((UserAdapter) mGridView.getAdapter()).refill(mUsers);
+                    }
 
                     addFriendCheckMarks();
 
@@ -143,38 +165,6 @@ public class EditFriendsActivity extends ListActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        // call the version of this method in the superclass first
-        super.onListItemClick(l, v, position, id);
-
-        if (getListView().isItemChecked(position)) {
-            // Add a friend if checked
-            // Pass in the user that was tapped on as the parameter (the position of the item that is tapped on)
-            // Map this to our list of users stored in the variable mUsers
-            // For a list variable (mUsers), we use the get() method
-            // Now the user at the current position will be added to the friends relation
-            mFriendsRelation.add(mUsers.get(position));
-        } else {
-            // remove the friend by calling the remove() method of ParseRelation
-            mFriendsRelation.remove(mUsers.get(position));
-        }
-
-        // the user is added/removed locally, but we also need to save this relation to the backend
-        // choose the asynchronous method saveInBackground() and for the callback, use new SaveCallback()
-        mCurrentUser.saveInBackground(new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                // Don't do anything if successful
-                // If it fails, let the user retry deleting them as friends again and log the exception
-                if (e != null) {
-                    Log.e(TAG, e.getMessage());
-                }
-            }
-        });
-
-    }
-
 
     private void addFriendCheckMarks() {
         // the first thing we need is a list of the users friends
@@ -202,7 +192,7 @@ public class EditFriendsActivity extends ListActivity {
                             // compare the object id of each friend (the object id is the unique id created each time a new user signs up)
                             if (friend.getObjectId().equals(user.getObjectId())) {
                                 // set the check mark
-                                getListView().setItemChecked(i, true);
+                                mGridView.setItemChecked(i, true);
                             }
                         }
                     }
@@ -212,4 +202,47 @@ public class EditFriendsActivity extends ListActivity {
             }
         });
     }
+
+    // Show or hide the image for the check mark overlay
+    // The item that is tapped on, gets passed in as the view parameter
+    // The view parameter is the relative layout of the user_item.xml
+    protected AdapterView.OnItemClickListener mOnItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            // Get a reference to the ImageView
+            ImageView checkImageView = (ImageView) view.findViewById(R.id.checkFriendImageView);
+
+            if (mGridView.isItemChecked(position)) {
+                // Add a friend if checked
+                // Pass in the user that was tapped on as the parameter (the position of the item that is tapped on)
+                // Map this to our list of users stored in the variable mUsers
+                // For a list variable (mUsers), we use the get() method
+                // Now the user at the current position will be added to the friends relation
+                mFriendsRelation.add(mUsers.get(position));
+
+                // Manipulate the image view for the check mark - set to visible when selected
+                checkImageView.setVisibility(View.VISIBLE);
+            } else {
+                // remove the friend by calling the remove() method of ParseRelation
+                mFriendsRelation.remove(mUsers.get(position));
+
+                // Manipulate the image view for the check mark - set to invisible when selected
+                checkImageView.setVisibility(View.INVISIBLE);
+            }
+
+            // the user is added/removed locally, but we also need to save this relation to the backend
+            // choose the asynchronous method saveInBackground() and for the callback, use new SaveCallback()
+            mCurrentUser.saveInBackground(new SaveCallback() {
+                @Override
+                public void done(ParseException e) {
+                    // Don't do anything if successful
+                    // If it fails, let the user retry deleting them as friends again and log the exception
+                    if (e != null) {
+                        Log.e(TAG, e.getMessage());
+                    }
+                }
+            });
+        }
+    };
 }
+

@@ -35,7 +35,7 @@
 
     <string name="progress_bar">Progress Bar</string>
 
-    <string name="empty_inbox_label">No new routes</string>
+    <string name="empty_inbox_label">No new parseUsers</string>
     <string name="empty_friends_label">No fiends yet... Add some to begin</string>
     <string name="title_activity_edit_friends">Edit Friends</string>
     <string name="title_activity_maps_activity_manual_polyline">Manual Polyline</string>
@@ -84,7 +84,7 @@
 
     <string name="route_creation_error_message">Please ensure you have at least 2 points selected</string>
     <string name="route_creation_error_title">Tap the map</string>
-    <string name="route_undo_error_message">No more routes to undo</string>
+    <string name="route_undo_error_message">No more parseUsers to undo</string>
     <string name="route_undo_error_title">Steady on...</string>
     <string name="title_activity_route_recipients">RouteRecipientsActivity</string>
     <string name="success_route">Route sent</string>
@@ -129,5 +129,8 @@
     <string name="drawer_close">Drawer Close</string>
 
     <string name="content_desc_message_icon">Message icon</string>
+    <string name="content_desc_user_avatar">User avatar</string>
+    <string name="content_desc_user_checkmark">User checked</string>
+
 
 </resources>

@@ -1,7 +1,7 @@
 package com.khackett.runmate.ui;
 
+import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,12 +9,17 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.khackett.runmate.R;
+import com.khackett.runmate.adapters.UserAdapter;
 import com.khackett.runmate.utils.ParseConstants;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -28,7 +33,7 @@ import com.parse.SaveCallback;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RouteRecipientsActivity extends ListActivity {
+public class RouteRecipientsActivity extends Activity {
 
     public static final String TAG = RouteRecipientsActivity.class.getSimpleName();
 
@@ -49,19 +54,32 @@ public class RouteRecipientsActivity extends ListActivity {
     // member variable to represent the array of ParseGeoPoint values to be stored in the parse.com cloud
     protected ArrayList<ParseGeoPoint> parseList;
 
+    // member variable for the GridView
+    protected GridView mGridView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-        setContentView(R.layout.activity_route_recipients);
+        setContentView(R.layout.user_grid);
 
         getActionBar().setDisplayHomeAsUpEnabled(true);
 
-        // the list view keeps track of items that are selected (this is the check property on each item)
-        // loop through the list to see who is checked - do this when we are ready to send
-        // get the default list view associated with this activity
-        getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);  // we can now check and uncheck multiple friends
+        mGridView = (GridView) findViewById(R.id.friendsGrid);
+
+        // mGridView keeps track of items that are selected (this is the check property on each item)
+        // loop through the grid to see who is checked - do this when ready to send
+        // get the default grid view associated with this activity
+        mGridView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);  // we can now check and uncheck multiple friends
+
+        // Set an OnItemClickListener
+        mGridView.setOnItemClickListener(mOnItemClickListener);
+
+        // Check that there are friends to display - if not, display a message
+        TextView emptyFriendsList = (TextView) findViewById(android.R.id.empty);
+        // Attach this as the empty text view for the GridView
+        mGridView.setEmptyView(emptyFriendsList);
 
         // get the array of LatLng points passed in from the map intent
         markerPoints = getIntent().getParcelableArrayListExtra("markerPoints");
@@ -116,15 +134,18 @@ public class RouteRecipientsActivity extends ListActivity {
                         usernames[i] = user.getUsername();
                         i++;
                     }
-                    // create an array adapter and set it as the adapter for this activity
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                            // for the first parameter here, need to get the context of a fragment through the list view itself
-                            // the list view knows which context it is in because of its layout in the fragment and in the activity that contains the fragment, so use...
-                            getListView().getContext(),
-                            android.R.layout.simple_list_item_checked,
-                            usernames);
-                    // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
-                    setListAdapter(adapter);
+
+                    // Use the custom user adapter
+                    // Get the adapter associated with the GridView and check to see if it is null
+                    if (mGridView.getAdapter() == null) {
+                        // Use the custom UserAdapter to display the users in the GridView
+                        UserAdapter adapter = new UserAdapter(RouteRecipientsActivity.this, mFriends);
+                        // Call setAdapter for this activity to set the items in the GridView
+                        mGridView.setAdapter(adapter);
+                    } else {
+                        // GridView is not available - refill with the list of friends
+                        ((UserAdapter) mGridView.getAdapter()).refill(mFriends);
+                    }
                 } else {
                     // display a message to the user (copied from EditFriendsActivity)
                     // there was an error - log the message
@@ -193,21 +214,6 @@ public class RouteRecipientsActivity extends ListActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    // change the visibility of the send button (set in menu_recipients.xml) whenever a a friend is selected
-    // we create the menu in onCreateOptionsMenu
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
-        super.onListItemClick(l, v, position, id);
-        // check the number of items that are checked on the list
-        if (l.getCheckedItemCount() > 0) {
-            // set the menuItem to visible if an item is clicked
-            mSendMenuItem.setVisible(true);
-        } else {
-            // otherwise, if it is 0, then hide the menu item
-            mSendMenuItem.setVisible(false);
-        }
-    }
-
     protected ParseObject createRoute() {
         // create a new parse object called route
         // (we can create a whole new class of parse objects in the back end by simply using a new name)
@@ -237,9 +243,9 @@ public class RouteRecipientsActivity extends ListActivity {
     protected ArrayList<String> getRecipientIds() {
         ArrayList<String> recipientIds = new ArrayList<String>();
         // iterate though each user in the list
-        for (int i = 0; i < getListView().getCount(); i++) {
+        for (int i = 0; i < mGridView.getCount(); i++) {
             // if the user is checked on the recipients list
-            if (getListView().isItemChecked(i)) {
+            if (mGridView.isItemChecked(i)) {
                 // add their ID to the array list
                 recipientIds.add(mFriends.get(i).getObjectId());
             }
@@ -282,5 +288,36 @@ public class RouteRecipientsActivity extends ListActivity {
         }
         return parseList;
     }
+
+
+    // Show or hide the image for the check mark overlay
+    // The item that is tapped on, gets passed in as the view parameter
+    // The view parameter is the relative layout of the user_item.xml
+    protected AdapterView.OnItemClickListener mOnItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            // Change the visibility of the send button (set in menu_recipients.xml) whenever a friend is selected
+            // Create the menu in onCreateOptionsMenu
+            // Check the number of items that are checked on the grid view
+            if (mGridView.getCheckedItemCount() > 0) {
+                // set the menuItem to visible if an item is clicked
+                mSendMenuItem.setVisible(true);
+            } else {
+                // otherwise, if it is 0, then hide the menu item
+                mSendMenuItem.setVisible(false);
+            }
+
+            // Set the check friend image view
+            ImageView checkImageView = (ImageView) view.findViewById(R.id.checkFriendImageView);
+
+            if (mGridView.isItemChecked(position)) {
+                // Manipulate the image view for the check mark - set to visible when selected
+                checkImageView.setVisibility(View.VISIBLE);
+            } else {
+                // Manipulate the image view for the check mark - set to invisible when selected
+                checkImageView.setVisibility(View.INVISIBLE);
+            }
+        }
+    };
 
 }

@@ -24,4 +24,8 @@
 
     <dimen name="message_time_text">12sp</dimen>
 
+    <dimen name="user_item_height">44dp</dimen>
+    <dimen name="user_item_padding">4dp</dimen>
+    <dimen name="user_grid_spacing">8dp</dimen>
+
 </resources>

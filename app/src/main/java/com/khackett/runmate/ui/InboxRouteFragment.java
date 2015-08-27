@@ -8,12 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.khackett.runmate.MapsActivityDisplayRoute;
 import com.khackett.runmate.R;
-import com.khackett.runmate.adapters.MessageAdapter;
+import com.khackett.runmate.adapters.RouteMessageAdapter;
 import com.khackett.runmate.utils.ParseConstants;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -87,15 +86,15 @@ public class InboxRouteFragment extends ListFragment {
 //                // the list being returned is a list of messages
 //                if (e == null) {
 //                    // successful - messages found.  They are stored as a list in messages
-//                    mRoutes = messages;
+//                    mParseUsers = messages;
 //
 //                    // adapt this data for the list view, showing the senders name
 //
 //                    // create an array of strings to store the usernames and set the size equal to that of the list returned
-//                    String[] usernames = new String[mRoutes.size()];
+//                    String[] usernames = new String[mParseUsers.size()];
 //                    // enhanced for loop to go through the list of users and create an array of usernames
 //                    int i = 0;
-//                    for (ParseObject message : mRoutes) {
+//                    for (ParseObject message : mParseUsers) {
 //                        // get the specific key
 //                        usernames[i] = message.getString(ParseConstants.KEY_SENDER_NAME);
 //                        i++;
@@ -110,7 +109,7 @@ public class InboxRouteFragment extends ListFragment {
 ////                            usernames);
 //
 //                    // the above adapter code is now replaced with the following line
-//                    MessageAdapter adapter = new MessageAdapter(getListView().getContext(), mRoutes);
+//                    RouteMessageAdapter adapter = new RouteMessageAdapter(getListView().getContext(), mParseUsers);
 //
 //                    // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
 //                    setListAdapter(adapter);
@@ -128,7 +127,7 @@ public class InboxRouteFragment extends ListFragment {
 //        super.onListItemClick(l, v, position, id);
 //        // to tell whether it is an image or a video, we need to access the type of the message
 //        // create the message object which is set to the message at the current position
-//        ParseObject message = mRoutes.get(position);
+//        ParseObject message = mParseUsers.get(position);
 //        String messageType = message.getString(ParseConstants.KEY_FILE_TYPE);
 //
 //        // for both image and videos, we can view them directly from the backend on parse by getting their URL
@@ -244,14 +243,14 @@ public class InboxRouteFragment extends ListFragment {
                     // Create the adapter once and update its state on each refresh
                     if (getListView().getAdapter() == null) {
                         // the above adapter code is now replaced with the following line
-                        MessageAdapter adapter = new MessageAdapter(getListView().getContext(), mRoutes);
+                        RouteMessageAdapter adapter = new RouteMessageAdapter(getListView().getContext(), mRoutes);
 
                         // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
                         setListAdapter(adapter);
                     } else {
                         // refill the adapter
-                        // cast it to MessageAdapter
-                        ((MessageAdapter) getListView().getAdapter()).refill(mRoutes);
+                        // cast it to RouteMessageAdapter
+                        ((RouteMessageAdapter) getListView().getAdapter()).refill(mRoutes);
                     }
 
                 }

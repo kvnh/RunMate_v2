@@ -2,14 +2,16 @@ package com.khackett.runmate.ui;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
-import android.support.v4.app.ListFragment;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.TextView;
 
 import com.khackett.runmate.R;
+import com.khackett.runmate.adapters.UserAdapter;
 import com.khackett.runmate.utils.ParseConstants;
 import com.parse.FindCallback;
 import com.parse.ParseException;
@@ -22,7 +24,7 @@ import java.util.List;
 /**
  * Created by KHackett on 23/07/15.
  */
-public class FriendsFragment extends ListFragment {
+public class FriendsFragment extends Fragment {
 
     public static final String TAG = FriendsFragment.class.getSimpleName();
 
@@ -32,6 +34,8 @@ public class FriendsFragment extends ListFragment {
     protected List<ParseUser> mFriends;
     // set up a ParseRelation member to hold ParseUsers
     protected ParseRelation<ParseUser> mFriendsRelation;
+    // add a variable for the gridview
+    protected GridView mGridView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -41,7 +45,15 @@ public class FriendsFragment extends ListFragment {
         // the 3rd parameter should be false whenever we add a fragment to an activity in code, which is what we are going to do
         // So this line of code uses an inflater object to create a new view using the layout we provide.
         // It then attaches that view to a parent, which in this case is the ViewPager object from main activity
-        View rootView = inflater.inflate(R.layout.fragment_friends, container, false);
+        View rootView = inflater.inflate(R.layout.user_grid, container, false);
+
+        // Set the GridView fragment
+        mGridView = (GridView)rootView.findViewById(R.id.friendsGrid);
+
+        // Check that there are friends to display - if not, display a message
+        TextView emptyFriendsList = (TextView)rootView.findViewById(android.R.id.empty);
+        // Attach this as the empty text view for the GridView
+        mGridView.setEmptyView(emptyFriendsList);
 
         // note that this method returns a view - this is the view of the whole fragment
         return rootView;
@@ -96,23 +108,25 @@ public class FriendsFragment extends ListFragment {
                         usernames[i] = user.getUsername();
                         i++;
                     }
-                    // create an array adapter and set it as the adapter for this activity
-                    ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                            // for the first parameter here, need to get the context of a fragment through the list view itself
-                            // the list view knows which context it is in because of its layout in the fragment and in the activity that contains the fragment, so use...
-                            getListView().getContext(),
-                            // no need to have check boxes in this list, so change it to simple_list_item_1 or whatever works well
-                            android.R.layout.simple_list_item_1,
-                            usernames);
-                    // need to call setListAdapter for this activity.  This method is specifically from the ListActivity class
-                    setListAdapter(adapter);
+
+                    // Get the adapter associated with the GridView and check to see if it is null
+                    if(mGridView.getAdapter() == null) {
+                        // Use the custom UserAdapter to display the users in the GridView
+                        UserAdapter adapter = new UserAdapter(getActivity(), mFriends);
+                        // Call setAdapter for this activity to set the items in the GridView
+                        mGridView.setAdapter(adapter);
+                    } else {
+                        // GridView is not available - refill with the list of friends
+                        ((UserAdapter)mGridView.getAdapter()).refill(mFriends);
+                    }
+
                 } else {
                     // display a message to the user (copied from EditFriendsActivity)
                     // there was an error - log the message
                     Log.e(TAG, e.getMessage());
                     // display an alert to the user
                     // if there is a parse exception then...
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getListView().getContext());
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     // set the message from the exception
                     builder.setMessage(e.getMessage())
                             .setTitle(R.string.error_title)
