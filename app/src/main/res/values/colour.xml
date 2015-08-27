@@ -24,4 +24,11 @@
     <color name="textColor">#250054</color>
 
     <color name="lightPurpleBackground">#E9E4ED</color>
+
+    <color name="swipeRefresh1">#482C6F</color>
+    <color name="swipeRefresh2">#AD78D9</color>
+    <color name="swipeRefresh3">#DCADF4</color>
+    <color name="swipeRefresh4">#AD78D9</color>
+
+
 </resources>
