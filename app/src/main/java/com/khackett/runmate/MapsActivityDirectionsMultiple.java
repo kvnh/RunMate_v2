@@ -3,9 +3,6 @@ package com.khackett.runmate;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.graphics.Color;
-import android.location.Criteria;
-import android.location.Location;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
@@ -25,6 +22,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.khackett.runmate.model.Route;
+import com.khackett.runmate.ui.RouteRecipientsActivity;
 import com.khackett.runmate.utils.DirectionsJSONParser;
 
 import org.json.JSONArray;

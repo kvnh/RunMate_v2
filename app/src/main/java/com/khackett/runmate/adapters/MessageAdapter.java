@@ -1,6 +1,7 @@
 package com.khackett.runmate.adapters;
 
 import android.content.Context;
+import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +13,7 @@ import com.khackett.runmate.R;
 import com.khackett.runmate.utils.ParseConstants;
 import com.parse.ParseObject;
 
+import java.util.Date;
 import java.util.List;
 
 // need to create a custom list view adapter - very similar to the way it is done in fragments
@@ -62,6 +64,7 @@ public class MessageAdapter extends ArrayAdapter<ParseObject> {
             // findViewById() is an activity method, but we can call it from the convert view
             holder.iconImageView = (ImageView) convertView.findViewById(R.id.messageIcon);
             holder.nameLabel = (TextView) convertView.findViewById(R.id.senderLabel);
+            holder.timeLabel = (TextView) convertView.findViewById(R.id.timeLabel);
             convertView.setTag(holder);
         } else {
             // then it already exists and we can reuse the components - they are already there in memory - we just need to change the data
@@ -71,25 +74,40 @@ public class MessageAdapter extends ArrayAdapter<ParseObject> {
 
         // set the data in the view - picture icon and name
         // get the parse object that corresponds to position, because getView() is going to be called for each position in the list
-        ParseObject message = mRoutes.get(position);
+        ParseObject route = mRoutes.get(position);
 
-//        // change the icon based on the message type
-//        if (message.getString(ParseConstants.KEY_FILE_TYPE).equals(ParseConstants.TYPE_IMAGE)) {
+        // Declare a new Java Date variable to contain the date the route was sent
+        Date sentAt = route.getCreatedAt();
+        // Convert Date object into a String object to be used in the text view
+        long timeNow = new Date().getTime();
+        String stringDate = DateUtils.getRelativeTimeSpanString(
+                sentAt.getTime(),
+                timeNow,
+                DateUtils.SECOND_IN_MILLIS).toString();
+
+        // Use newly created String Date in the Text View
+        holder.timeLabel.setText(stringDate);
+
+//        // change the icon based on the route type
+//        if (route.getString(ParseConstants.KEY_FILE_TYPE).equals(ParseConstants.TYPE_IMAGE)) {
 //            holder.iconImageView.setImageResource(R.mipmap.ic_action_picture);
 //        } else {
 //            holder.iconImageView.setImageResource(R.mipmap.ic_action_play_over_video);
 //        }
+        holder.iconImageView.setImageResource(R.mipmap.ic_action_picture);
 
-        holder.nameLabel.setText(message.getString(ParseConstants.KEY_SENDER_NAME));
+        holder.nameLabel.setText(route.getString(ParseConstants.KEY_SENDER_NAME));
 
         return convertView;
     }
 
-    // class that contains the data that is going to be displayed in the custom layout
+    // class that contains the data that is going to be displayed in the custom layout for each item
     private static class ViewHolder {
         // we have 2 pieces of data - a text view and an image view
         ImageView iconImageView;
         TextView nameLabel;
+        TextView timeLabel;
+
     }
 
     // method to refill the list with ParseObject data if it is not null

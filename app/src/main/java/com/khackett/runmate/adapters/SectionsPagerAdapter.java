@@ -5,8 +5,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.khackett.runmate.FriendsFragment;
-import com.khackett.runmate.InboxRouteFragment;
+import com.khackett.runmate.ui.FriendsFragment;
+import com.khackett.runmate.ui.InboxRouteFragment;
 import com.khackett.runmate.R;
 
 import java.util.Locale;

@@ -28,7 +28,7 @@
             android:layout_height="0dp"
             android:layout_weight="1" />
 
-        <com.khackett.runmate.SlidingTabLayout
+        <com.khackett.runmate.utils.SlidingTabLayout
             android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -53,7 +53,7 @@
     
     <fragment
         android:id="@+id/navigation_drawer_fragment"
-        android:name="com.khackett.runmate.activity.NavigationDrawerFragment"
+        android:name="com.khackett.runmate.ui.NavigationDrawerFragment"
         android:layout_width="@dimen/nav_drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"
